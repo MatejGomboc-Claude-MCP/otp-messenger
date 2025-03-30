@@ -17,13 +17,13 @@ This project is not intended for production use or in environments requiring hig
 
 ## Project Overview
 
-OTP Messenger aims to implement a theoretically unbreakable encrypted messaging system using the One-Time Pad encryption method. Keys are stored in large binary files ("cypher books") that are manually exchanged between parties through offline means (e.g., USB sticks).
+OTP Messenger aims to implement a theoretically unbreakable encrypted messaging system using the One-Time Pad encryption method. Keys are stored in large binary files ("codebooks") that are manually exchanged between parties through offline means (e.g., USB sticks).
 
 ### Key Features
 
 - True One-Time Pad encryption implementation
 - Qt6-based cross-platform GUI
-- Secure cypher book management
+- Secure codebook management
 - Multi-factor authentication options
 - Biometric authentication support
 - Cold War inspired verification protocols
@@ -69,19 +69,19 @@ cmake --build .
    - On first launch, you'll be presented with a disclaimer that you must accept to use the application
    - You'll be prompted to create a password and set up your desired authentication method
 
-2. **Creating a Cypher Book**
-   - Go to File → New Cypher Book
+2. **Creating a Codebook**
+   - Go to File → New Codebook
    - Choose a file location and size (larger is more secure but uses more storage)
    - The application will generate random key material
 
-3. **Exchanging Cypher Books**
-   - Copy your cypher book file to a USB drive
+3. **Exchanging Codebooks**
+   - Copy your codebook file to a USB drive
    - Physically deliver it to your communication partner
-   - Both parties must have identical cypher book files
+   - Both parties must have identical codebook files
 
 ### Sending Messages
 
-1. Select your cypher book file
+1. Select your codebook file
 2. Type your message
 3. Click "Send" to encrypt
 4. Copy the encrypted message or save to a file
@@ -149,7 +149,7 @@ This project is inspired by actual cryptographic methods used during the Cold Wa
 
 The Soviet Union was a dedicated user of One-Time Pad encryption, with KGB and GRU agents relying on physical codebooks for secure communications:
 
-- **Physical Codebooks**: Agents were issued small, printed booklets with pages of random numbers. Our digital "cypher books" are modeled on these physical artifacts.
+- **Physical Codebooks**: Agents were issued small, printed booklets with pages of random numbers. Our digital "codebooks" are modeled on these physical artifacts.
 
 - **Usage Tracking**: Soviet agents would physically mark off portions of the codebook after use to prevent reuse. Our software implements this through digital tracking of key material.
 
@@ -177,13 +177,13 @@ The Soviet Union was a dedicated user of One-Time Pad encryption, with KGB and G
 
 - Physical key material exchange happened through "dead drops" - predetermined locations where items could be left by one agent and retrieved by another without direct contact.
 
-- Our application's assumption of manual cypher book exchange (via USB sticks) mirrors this operational security principle.
+- Our application's assumption of manual codebook exchange (via USB sticks) mirrors this operational security principle.
 
 ## Development Roadmap and TODO List
 
 ### Core Encryption
-- [x] Implement true random number generation for cypher books
-- [x] Create cypher book format and management system
+- [x] Implement true random number generation for codebooks
+- [x] Create codebook format and management system
 - [x] Develop key synchronization mechanism
 - [x] Implement message encryption/decryption using OTP
 
@@ -195,12 +195,12 @@ The Soviet Union was a dedicated user of One-Time Pad encryption, with KGB and G
 
 ### User Interface
 - [ ] Design main messenger interface
-- [ ] Create cypher book management UI
+- [ ] Create codebook management UI
 - [ ] Implement security settings and preferences
 - [ ] Add key material status indicators
 
 ### Security Enhancements
-- [x] Implement secure storage for cypher books
+- [x] Implement secure storage for codebooks
 - [x] Add message integrity verification
 - [x] Develop protection against replay attacks
 - [x] Create secure key depletion tracking
