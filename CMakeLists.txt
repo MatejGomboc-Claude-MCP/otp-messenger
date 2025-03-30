@@ -21,6 +21,7 @@ set(SOURCES
     src/cryptoengine.cpp
     src/cypherbook.cpp
     src/authentication.cpp
+    src/messageprotocol.cpp
 )
 
 # Header files
@@ -29,6 +30,7 @@ set(HEADERS
     src/cryptoengine.h
     src/cypherbook.h
     src/authentication.h
+    src/messageprotocol.h
 )
 
 # UI files
