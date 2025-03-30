@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QByteArray>
 #include <QMutex>
+#include <QList>
 
 class CypherBook : public QObject
 {
@@ -22,7 +23,21 @@ public:
         quint64 currentPosition;     // Current position in the key material
         quint64 created;             // Unix timestamp when created
         quint32 checksumHeader;      // Checksum for header integrity
+        quint32 compartmentCount;    // Number of compartments in the book
+        quint64 authSectionOffset;   // Offset to authentication section
+        quint64 authSectionSize;     // Size of authentication section
+        quint64 emergencyCodeOffset; // Offset to emergency destruction code
         quint8 reserved[32];         // Reserved for future use
+    };
+    
+    // Compartment structure - inspired by mission-specific sections in Soviet codebooks
+    struct Compartment {
+        quint64 offset;              // Offset in the cypher book
+        quint64 size;                // Size of this compartment
+        quint64 currentPosition;     // Current position in this compartment
+        quint32 checksum;            // Compartment data checksum
+        bool locked;                 // Whether this compartment is locked
+        char name[32];               // Compartment name/identifier
     };
 
     explicit CypherBook(QObject *parent = nullptr);
@@ -64,16 +79,39 @@ public:
     // Generate truly random key material
     static QByteArray generateRandomKeyMaterial(quint64 size);
     
+    // Compartment management (inspired by mission-specific sections)
+    bool createCompartment(const QString &name, quint64 size);
+    bool lockCompartment(const QString &name);
+    bool unlockCompartment(const QString &name, const QByteArray &key);
+    QList<QString> getCompartmentNames() const;
+    
+    // Authentication section (inspired by agent verification codes)
+    QByteArray getAuthenticationMaterial(quint64 length);
+    bool markAuthenticationUsed(quint64 position, quint64 length);
+    
+    // Emergency protocols (inspired by emergency destruction procedures)
+    void setEmergencyDestruction(const QString &code);
+    bool executeEmergencyProtocol(const QString &code);
+    
+    // Duress signaling (inspired by agent duress codes)
+    void setDuressCode(const QString &code);
+    bool isDuressCode(const QString &code) const;
+    
 signals:
     void keyMaterialLow(double percentageRemaining);
     void error(const QString &errorMessage);
+    void emergencyProtocolExecuted();
+    void duressDetected();
     
 private:
     QString filename;
     QFile file;
     Header header;
+    QList<Compartment> compartments;
     bool modified;
     QMutex accessMutex;
+    QByteArray duressCodeHash;
+    QByteArray emergencyCodeHash;
     
     // Read the header from the file
     bool readHeader();
@@ -81,11 +119,23 @@ private:
     // Write the header to the file
     bool writeHeader();
     
+    // Read compartment information
+    bool readCompartments();
+    
+    // Write compartment information
+    bool writeCompartments();
+    
     // Calculate header checksum
     quint32 calculateHeaderChecksum() const;
     
     // Validate file integrity
     bool validateIntegrity();
+    
+    // Securely wipe key material (for emergency protocols)
+    bool secureWipe(quint64 offset, quint64 length);
+    
+    // Create hash from password/code
+    static QByteArray hashCode(const QString &code);
 };
 
 #endif // CYPHERBOOK_H
