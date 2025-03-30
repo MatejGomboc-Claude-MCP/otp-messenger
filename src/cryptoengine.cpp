@@ -8,34 +8,34 @@ const char OTP_MAGIC_HEADER[] = "OTP1"; // Magic identifier for OTP messages
 const int MAC_SIZE = 32; // Size of MAC in bytes (SHA-256)
 
 CryptoEngine::CryptoEngine(QObject *parent)
-    : QObject(parent), cypherBook(nullptr)
+    : QObject(parent), codeBook(nullptr)
 {
 }
 
-bool CryptoEngine::setCypherBook(CypherBook *book)
+bool CryptoEngine::setCodeBook(CodeBook *book)
 {
     if (!book) {
-        emit error(tr("Invalid cypher book"));
+        emit error(tr("Invalid codebook"));
         return false;
     }
     
     if (!book->isOpen()) {
-        emit error(tr("Cypher book is not open"));
+        emit error(tr("Codebook is not open"));
         return false;
     }
     
-    cypherBook = book;
+    codeBook = book;
     
-    // Connect signals from the cypher book
-    connect(cypherBook, &CypherBook::keyMaterialLow, this, &CryptoEngine::keyMaterialLow);
+    // Connect signals from the codebook
+    connect(codeBook, &CodeBook::keyMaterialLow, this, &CryptoEngine::keyMaterialLow);
     
     return true;
 }
 
 QByteArray CryptoEngine::encrypt(const QByteArray &plaintext, quint64 &keyOffset)
 {
-    if (!cypherBook) {
-        emit error(tr("No cypher book set"));
+    if (!codeBook) {
+        emit error(tr("No codebook set"));
         return QByteArray();
     }
     
@@ -48,13 +48,13 @@ QByteArray CryptoEngine::encrypt(const QByteArray &plaintext, quint64 &keyOffset
         return QByteArray();
     }
     
-    // Use the current position in the cypher book
-    keyOffset = cypherBook->getCurrentPosition();
+    // Use the current position in the codebook
+    keyOffset = codeBook->getCurrentPosition();
     
-    // Get key material from the cypher book
-    QByteArray keyMaterial = cypherBook->getKeyMaterial(keyOffset, requiredLength);
+    // Get key material from the codebook
+    QByteArray keyMaterial = codeBook->getKeyMaterial(keyOffset, requiredLength);
     if (keyMaterial.isEmpty()) {
-        // Error message already emitted by cypherBook
+        // Error message already emitted by codeBook
         return QByteArray();
     }
     
@@ -62,8 +62,8 @@ QByteArray CryptoEngine::encrypt(const QByteArray &plaintext, quint64 &keyOffset
     QByteArray ciphertext = xorWithKey(plaintext, keyMaterial);
     
     // Mark key material as used
-    if (!cypherBook->markAsUsed(keyOffset, requiredLength)) {
-        // Error message already emitted by cypherBook
+    if (!codeBook->markAsUsed(keyOffset, requiredLength)) {
+        // Error message already emitted by codeBook
         return QByteArray();
     }
     
@@ -91,8 +91,8 @@ QByteArray CryptoEngine::encrypt(const QByteArray &plaintext, quint64 &keyOffset
 
 QByteArray CryptoEngine::decrypt(const QByteArray &ciphertext, quint64 keyOffset)
 {
-    if (!cypherBook) {
-        emit error(tr("No cypher book set"));
+    if (!codeBook) {
+        emit error(tr("No codebook set"));
         return QByteArray();
     }
     
@@ -126,10 +126,10 @@ QByteArray CryptoEngine::decrypt(const QByteArray &ciphertext, quint64 keyOffset
         return QByteArray();
     }
     
-    // Get key material from the cypher book
-    QByteArray keyMaterial = cypherBook->getKeyMaterial(storedKeyOffset, keyLength);
+    // Get key material from the codebook
+    QByteArray keyMaterial = codeBook->getKeyMaterial(storedKeyOffset, keyLength);
     if (keyMaterial.isEmpty()) {
-        // Error message already emitted by cypherBook
+        // Error message already emitted by codeBook
         return QByteArray();
     }
     
@@ -155,34 +155,34 @@ quint64 CryptoEngine::calculateRequiredKeyLength(const QByteArray &message)
 
 bool CryptoEngine::hasEnoughKeyMaterial(const QByteArray &message)
 {
-    if (!cypherBook) {
+    if (!codeBook) {
         return false;
     }
     
     quint64 requiredLength = calculateRequiredKeyLength(message);
-    return (cypherBook->getUnusedSize() >= requiredLength);
+    return (codeBook->getUnusedSize() >= requiredLength);
 }
 
 QByteArray CryptoEngine::generateMAC(const QByteArray &message, quint64 &keyOffset)
 {
-    if (!cypherBook) {
-        emit error(tr("No cypher book set"));
+    if (!codeBook) {
+        emit error(tr("No codebook set"));
         return QByteArray();
     }
     
     // For a true OTP-like MAC, we need additional key material
     // We'll use 32 bytes (256 bits) for the MAC
-    quint64 macKeyOffset = cypherBook->getCurrentPosition();
-    QByteArray macKeyMaterial = cypherBook->getKeyMaterial(macKeyOffset, MAC_SIZE);
+    quint64 macKeyOffset = codeBook->getCurrentPosition();
+    QByteArray macKeyMaterial = codeBook->getKeyMaterial(macKeyOffset, MAC_SIZE);
     
     if (macKeyMaterial.isEmpty()) {
-        // Error message already emitted by cypherBook
+        // Error message already emitted by codeBook
         return QByteArray();
     }
     
     // Mark MAC key material as used
-    if (!cypherBook->markAsUsed(macKeyOffset, MAC_SIZE)) {
-        // Error message already emitted by cypherBook
+    if (!codeBook->markAsUsed(macKeyOffset, MAC_SIZE)) {
+        // Error message already emitted by codeBook
         return QByteArray();
     }
     
@@ -198,18 +198,18 @@ QByteArray CryptoEngine::generateMAC(const QByteArray &message, quint64 &keyOffs
 
 bool CryptoEngine::verifyMAC(const QByteArray &message, const QByteArray &mac, quint64 keyOffset)
 {
-    if (!cypherBook) {
-        emit error(tr("No cypher book set"));
+    if (!codeBook) {
+        emit error(tr("No codebook set"));
         return false;
     }
     
     // For verification, we need the same key material that was used for MAC generation
     // This is typically right after the message key material
     quint64 macKeyOffset = keyOffset + calculateRequiredKeyLength(message) - (4 + sizeof(keyOffset) + sizeof(quint64) + sizeof(quint64));
-    QByteArray macKeyMaterial = cypherBook->getKeyMaterial(macKeyOffset, MAC_SIZE);
+    QByteArray macKeyMaterial = codeBook->getKeyMaterial(macKeyOffset, MAC_SIZE);
     
     if (macKeyMaterial.isEmpty()) {
-        // Error message already emitted by cypherBook
+        // Error message already emitted by codeBook
         return false;
     }
     
