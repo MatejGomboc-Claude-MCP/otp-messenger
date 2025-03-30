@@ -11,7 +11,7 @@ OTPMessenger
 ├── src/
 │   ├── main.cpp                  # Application entry point
 │   ├── mainwindow.h/cpp          # Main UI
-│   ├── cypherbook.h/cpp          # Key material management
+│   ├── codebook.h/cpp            # Key material management
 │   ├── cryptoengine.h/cpp        # Encryption/decryption
 │   ├── authentication.h/cpp      # Multi-factor authentication
 │   └── messageprotocol.h/cpp     # Message formatting & verification
@@ -25,8 +25,8 @@ OTPMessenger
    - Coordinates between backend components
    - Provides visual feedback
 
-2. **CypherBook**: Manages storage and access to key material
-   - Handles file I/O for cypher book files
+2. **CodeBook**: Manages storage and access to key material
+   - Handles file I/O for codebook files
    - Tracks used/unused key material
    - Implements compartmentalization
    - Provides emergency protocols
@@ -58,10 +58,10 @@ The components interact in the following way:
    - Calls appropriate methods on the backend components
    - Displays results and feedback
 
-2. **Cypher Book & Crypto Engine**
-   - `CryptoEngine` holds a reference to `CypherBook` to get key material
-   - When encrypting/decrypting, `CryptoEngine` requests key material from `CypherBook`
-   - After using key material, `CryptoEngine` tells `CypherBook` to mark it as used
+2. **Codebook & Crypto Engine**
+   - `CryptoEngine` holds a reference to `CodeBook` to get key material
+   - When encrypting/decrypting, `CryptoEngine` requests key material from `CodeBook`
+   - After using key material, `CryptoEngine` tells `CodeBook` to mark it as used
 
 3. **Message Protocol & Crypto Engine**
    - `MessageProtocol` holds a reference to `CryptoEngine`
@@ -78,7 +78,7 @@ The components interact in the following way:
 ### Encryption Process
 
 1. Get a message to encrypt
-2. Get a portion of random key material from the cypher book
+2. Get a portion of random key material from the codebook
 3. Perform XOR operation between the message and key material
 4. Mark that portion of the key material as used
 5. Include metadata with the encrypted message (key offset, length, etc.)
@@ -88,14 +88,14 @@ The components interact in the following way:
 ### Decryption Process
 
 1. Parse the encrypted message to extract metadata
-2. Find the appropriate key material in the cypher book using the key offset
+2. Find the appropriate key material in the codebook using the key offset
 3. Verify the MAC to ensure message integrity
 4. Perform XOR operation between the encrypted data and key material
 5. Return the decrypted message
 
-## Cypher Book Format
+## Codebook Format
 
-The cypher book is a binary file with the following structure:
+The codebook is a binary file with the following structure:
 
 1. **Header** (fixed size)
    - Format version
@@ -126,7 +126,7 @@ Messages are structured as follows:
 
 1. **Header**
    - Magic identifier ("OTP1")
-   - Key offset (position in cypher book)
+   - Key offset (position in codebook)
    - Key length used
    - Timestamp
 
@@ -221,7 +221,7 @@ True randomness is critical for OTP security:
 ### Secure Storage
 
 Key material must be protected:
-- Cypher book files should be encrypted at rest
+- Codebook files should be encrypted at rest
 - Consider OS-level encryption
 - Use secure deletion when removing key material
 
@@ -258,7 +258,7 @@ Improve randomness with dedicated hardware:
 ### Group Messaging
 
 Extend to support secure group communications:
-- Shared group cypher books
+- Shared group codebooks
 - Multiple recipient management
 - Key distribution protocols
 
@@ -271,9 +271,9 @@ Enhance the authentication system:
 
 ## Debugging Tips
 
-### Cypher Book Issues
+### Codebook Issues
 
-If you're having problems with cypher book files:
+If you're having problems with codebook files:
 - Check file permissions
 - Verify header integrity
 - Use the key material visualizer to inspect usage
@@ -281,7 +281,7 @@ If you're having problems with cypher book files:
 ### Encryption/Decryption Failures
 
 When messages won't encrypt or decrypt:
-- Verify both parties have identical cypher books
+- Verify both parties have identical codebooks
 - Check if key material has been exhausted
 - Ensure proper key offsets are being used
 
@@ -297,6 +297,6 @@ For authentication troubleshooting:
 When contributing to OTP Messenger:
 1. Follow the existing code style and architecture
 2. Add comprehensive documentation for new features
-3. Maintain backwards compatibility with existing cypher books
+3. Maintain backwards compatibility with existing codebooks
 4. Preserve the core OTP security principles
 5. Respect the Cold War inspirations that make this project unique
