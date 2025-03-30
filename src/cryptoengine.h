@@ -5,7 +5,7 @@
 #include <QByteArray>
 #include <QString>
 #include <QVector>
-#include "cypherbook.h"
+#include "codebook.h"
 
 class CryptoEngine : public QObject
 {
@@ -14,8 +14,8 @@ class CryptoEngine : public QObject
 public:
     explicit CryptoEngine(QObject *parent = nullptr);
     
-    // Set the cypher book to use for encryption/decryption
-    bool setCypherBook(CypherBook *book);
+    // Set the codebook to use for encryption/decryption
+    bool setCodeBook(CodeBook *book);
     
     // Encrypt a message using OTP
     QByteArray encrypt(const QByteArray &plaintext, quint64 &keyOffset);
@@ -42,7 +42,7 @@ signals:
     void error(const QString &errorMessage);
     
 private:
-    CypherBook *cypherBook;
+    CodeBook *codeBook;
     
     // Perform XOR operation (the core of OTP)
     QByteArray xorWithKey(const QByteArray &data, const QByteArray &key);
