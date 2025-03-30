@@ -36,6 +36,44 @@ This project draws inspiration from historical Cold War-era cryptographic system
 - **Authentication Material**: Reserved portions of the key material for verifying the identity of the communicating parties
 - **Duress Codes**: Special authentication sequences that silently indicate the user is under duress
 
+## Historical Context: Cold War Cryptography
+
+This project is inspired by actual cryptographic methods used during the Cold War, particularly by Soviet intelligence agencies and their Western counterparts.
+
+### Soviet OTP Systems
+
+The Soviet Union was a dedicated user of One-Time Pad encryption, with KGB and GRU agents relying on physical codebooks for secure communications:
+
+- **Physical Codebooks**: Agents were issued small, printed booklets with pages of random numbers. Our digital "cypher books" are modeled on these physical artifacts.
+
+- **Usage Tracking**: Soviet agents would physically mark off portions of the codebook after use to prevent reuse. Our software implements this through digital tracking of key material.
+
+- **VENONA Project**: When Soviet operators reused portions of their one-time pads during WWII and after, Western cryptanalysts in the VENONA project were able to crack some messages - highlighting the critical importance of never reusing key material.
+
+### Numbers Stations
+
+- Mysterious shortwave radio broadcasts consisting of spoken numbers or musical tones were used to transmit encoded messages to field agents. These broadcasts continue to this day (e.g., UVB-76 "The Buzzer").
+
+- These stations transmitted OTP-encrypted messages that would be meaningless without the corresponding codebook.
+
+### Authentication Techniques
+
+- **Call-Response Patterns**: Field agents used predetermined challenge and response phrases to verify identities, which we've implemented digitally.
+
+- **Control Words**: Messages contained special "control words" that helped verify authenticity and integrity. Our message protocol includes similar verification mechanisms.
+
+### Destruction Protocols
+
+- Codebooks were designed to be quickly destroyed if an agent was compromised. They often used special inks that would dissolve when exposed to water.
+
+- Our digital implementation includes secure wiping features inspired by these emergency protocols.
+
+### Dead Drops & Key Exchange
+
+- Physical key material exchange happened through "dead drops" - predetermined locations where items could be left by one agent and retrieved by another without direct contact.
+
+- Our application's assumption of manual cypher book exchange (via USB sticks) mirrors this operational security principle.
+
 ## Development Roadmap and TODO List
 
 ### Core Encryption
