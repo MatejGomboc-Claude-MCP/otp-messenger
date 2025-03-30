@@ -26,15 +26,120 @@ OTP Messenger aims to implement a theoretically unbreakable encrypted messaging 
 - Secure cypher book management
 - Multi-factor authentication options
 - Biometric authentication support
+- Cold War inspired verification protocols
 
-### Cold War-Inspired Security Features
+## Getting Started
 
-This project draws inspiration from historical Cold War-era cryptographic systems, particularly the Soviet codebook approach. Key features inspired by this era include:
+### Prerequisites
 
-- **Compartmentalized Cypher Books**: Separate sections of key material for different purposes, similar to mission-specific sections in Soviet codebooks
-- **Emergency Destruction Protocol**: Quick and secure deletion of key material when compromised
-- **Authentication Material**: Reserved portions of the key material for verifying the identity of the communicating parties
-- **Duress Codes**: Special authentication sequences that silently indicate the user is under duress
+- Qt6 (6.2 or newer recommended)
+- C++17 compatible compiler
+- CMake 3.16 or newer
+
+### Building from Source
+
+1. Clone the repository:
+```
+git clone https://github.com/MatejGomboc-Claude-MCP/otp-messenger.git
+cd otp-messenger
+```
+
+2. Create a build directory and configure with CMake:
+```
+mkdir build
+cd build
+cmake ..
+```
+
+3. Build the project:
+```
+cmake --build .
+```
+
+4. Run the application:
+```
+./OTPMessenger
+```
+
+## Usage Guide
+
+### Setting Up
+
+1. **First Launch**
+   - On first launch, you'll be presented with a disclaimer that you must accept to use the application
+   - You'll be prompted to create a password and set up your desired authentication method
+
+2. **Creating a Cypher Book**
+   - Go to File → New Cypher Book
+   - Choose a file location and size (larger is more secure but uses more storage)
+   - The application will generate random key material
+
+3. **Exchanging Cypher Books**
+   - Copy your cypher book file to a USB drive
+   - Physically deliver it to your communication partner
+   - Both parties must have identical cypher book files
+
+### Sending Messages
+
+1. Select your cypher book file
+2. Type your message
+3. Click "Send" to encrypt
+4. Copy the encrypted message or save to a file
+5. Deliver through any channel (even insecure ones)
+
+### Receiving Messages
+
+1. Paste the encrypted message
+2. Click "Decrypt"
+3. If successful, the decrypted message will be displayed
+
+### Security Features
+
+- **Authentication Levels**
+  - Basic: Password only
+  - Standard: Password + TOTP
+  - High: Password + Biometric
+  - Maximum: Password + Biometric + Hardware token
+
+- **Emergency Protocols**
+  - Set up an emergency destruction code
+  - If entered, key material will be securely wiped
+
+- **Duress Indicators**
+  - Create special messages that appear normal but indicate duress
+  - Recipients can detect these indicators
+
+## Implemented Components
+
+### Core Libraries
+
+1. **CypherBook**  
+   Manages the key material files with Cold War-inspired features:
+   - Compartmentalization for mission-specific key sections
+   - Emergency destruction protocols
+   - Authentication sections
+   - Duress codes
+
+2. **CryptoEngine**  
+   Handles the OTP encryption/decryption operations:
+   - XOR-based encryption (true OTP)
+   - Message Authentication Codes (MACs) for integrity
+   - Anti-replay protections
+
+3. **MessageProtocol**  
+   Implements message formatting and verification techniques:
+   - Challenge-response protocols
+   - Code phrase verification
+   - Hidden duress indicators
+   - Key synchronization messaging
+
+4. **Authentication**  
+   Multi-factor authentication system:
+   - Password-based authentication
+   - Time-based One-Time Password (TOTP)
+   - Biometric integration
+   - Hardware token support
+   - Tiered security levels
 
 ## Historical Context: Cold War Cryptography
 
@@ -77,16 +182,16 @@ The Soviet Union was a dedicated user of One-Time Pad encryption, with KGB and G
 ## Development Roadmap and TODO List
 
 ### Core Encryption
-- [ ] Implement true random number generation for cypher books
-- [ ] Create cypher book format and management system
-- [ ] Develop key synchronization mechanism
-- [ ] Implement message encryption/decryption using OTP
+- [x] Implement true random number generation for cypher books
+- [x] Create cypher book format and management system
+- [x] Develop key synchronization mechanism
+- [x] Implement message encryption/decryption using OTP
 
 ### Authentication
-- [ ] Implement traditional password authentication
-- [ ] Add 2FA support (TOTP)
-- [ ] Integrate biometric authentication (fingerprint, facial recognition)
-- [ ] Create tiered security model
+- [x] Implement traditional password authentication
+- [x] Add 2FA support (TOTP)
+- [x] Integrate biometric authentication (fingerprint, facial recognition)
+- [x] Create tiered security model
 
 ### User Interface
 - [ ] Design main messenger interface
@@ -95,35 +200,48 @@ The Soviet Union was a dedicated user of One-Time Pad encryption, with KGB and G
 - [ ] Add key material status indicators
 
 ### Security Enhancements
-- [ ] Implement secure storage for cypher books
-- [ ] Add message integrity verification
-- [ ] Develop protection against replay attacks
-- [ ] Create secure key depletion tracking
-- [ ] Implement Cold War-inspired security features
+- [x] Implement secure storage for cypher books
+- [x] Add message integrity verification
+- [x] Develop protection against replay attacks
+- [x] Create secure key depletion tracking
+- [x] Implement Cold War-inspired security features
 
-## Technical Challenges
+## For Developers
 
-We've identified several technical challenges that need to be addressed:
+### Architecture Overview
 
-### True Randomness Generation
-- Computer-generated randomness is typically pseudo-random, not truly random
-- Solutions: Hardware RNG, quantum-based services, combined entropy sources
+The application follows a modular design with clear separation of concerns:
 
-### Key Synchronization
-- Both parties must use the same portion of the cypher book in perfect sync
-- Solutions: Message counters, timestamps, block IDs, synchronization headers
+```
+OTPMessenger
+├── src/
+│   ├── main.cpp                  # Application entry point
+│   ├── mainwindow.h/cpp          # Main UI
+│   ├── cypherbook.h/cpp          # Key material management
+│   ├── cryptoengine.h/cpp        # Encryption/decryption
+│   ├── authentication.h/cpp      # Multi-factor authentication
+│   └── messageprotocol.h/cpp     # Message formatting & verification
+├── resources/                    # Icons, styles, etc.
+└── CMakeLists.txt                # Build configuration
+```
 
-### Key Depletion
-- OTP material is consumed as it's used
-- Solutions: Visual indicators, notifications, automated replenishment reminders
+### Key Classes and Their Responsibilities
 
-### Authentication & Integrity
-- OTP provides confidentiality but not authentication or integrity
-- Solutions: Separate authentication mechanisms, MACs, encrypted checksums
+- **MainWindow**: User interface and coordination between components
+- **CypherBook**: Manages storage and access to key material
+- **CryptoEngine**: Performs cryptographic operations
+- **Authentication**: Handles user identity verification
+- **MessageProtocol**: Formats and parses messages
 
-### Secure Storage
-- Cypher books must be protected at rest
-- Solutions: OS-level encryption, application encryption, secure deletion
+### Extending the Application
+
+Here are some areas where contributors could enhance the application:
+
+1. **UI Improvements**: The current UI is minimal and could be enhanced
+2. **Additional Authentication Methods**: Support for new biometric or token types
+3. **Network Transport**: Optional encrypted network transport
+4. **Improved Randomness**: Enhanced entropy gathering for key generation
+5. **Group Messaging**: Extensions for secure group communications
 
 ## Contributing
 
