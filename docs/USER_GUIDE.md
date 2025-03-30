@@ -6,8 +6,8 @@ Welcome to OTP Messenger! This guide will help you get started with using the ap
 
 1. [Introduction](#introduction)
 2. [Getting Started](#getting-started)
-3. [Creating a Cypher Book](#creating-a-cypher-book)
-4. [Exchanging Cypher Books](#exchanging-cypher-books)
+3. [Creating a Codebook](#creating-a-codebook)
+4. [Exchanging Codebooks](#exchanging-codebooks)
 5. [Sending Messages](#sending-messages)
 6. [Receiving Messages](#receiving-messages)
 7. [Security Features](#security-features)
@@ -15,7 +15,7 @@ Welcome to OTP Messenger! This guide will help you get started with using the ap
 
 ## Introduction
 
-OTP Messenger is a secure messaging application that uses One-Time Pad (OTP) encryption, which is mathematically proven to be unbreakable when implemented correctly. Unlike other messaging apps, OTP Messenger requires both communicating parties to have identical copies of a pre-shared random key file (called a "cypher book").
+OTP Messenger is a secure messaging application that uses One-Time Pad (OTP) encryption, which is mathematically proven to be unbreakable when implemented correctly. Unlike other messaging apps, OTP Messenger requires both communicating parties to have identical copies of a pre-shared random key file (called a "codebook").
 
 This approach is inspired by Cold War era cryptographic techniques, particularly those used by intelligence agencies for their most secure communications.
 
@@ -31,25 +31,25 @@ This approach is inspired by Cold War era cryptographic techniques, particularly
 
 When you first launch OTP Messenger, you'll see a disclaimer that you must accept to use the application. After accepting, you'll be prompted to set up a password for accessing the application.
 
-## Creating a Cypher Book
+## Creating a Codebook
 
-Before you can send or receive encrypted messages, you need to create a cypher book:
+Before you can send or receive encrypted messages, you need to create a codebook:
 
-1. Go to **File → New Cypher Book**
-2. Choose a file location to save your cypher book
-3. Select the size for your cypher book (larger books can encrypt more messages but use more storage)
-4. Wait for the cypher book generation process to complete
+1. Go to **File → New Codebook**
+2. Choose a file location to save your codebook
+3. Select the size for your codebook (larger books can encrypt more messages but use more storage)
+4. Wait for the codebook generation process to complete
 
-**Important**: The security of your messages depends on the randomness of your cypher book. The application uses multiple sources of randomness to generate the most secure key material possible.
+**Important**: The security of your messages depends on the randomness of your codebook. The application uses multiple sources of randomness to generate the most secure key material possible.
 
-## Exchanging Cypher Books
+## Exchanging Codebooks
 
 For two people to communicate securely using OTP Messenger:
 
-1. **Both parties** must have identical copies of the same cypher book
-2. Copy your cypher book to a secure storage medium (like an encrypted USB drive)
+1. **Both parties** must have identical copies of the same codebook
+2. Copy your codebook to a secure storage medium (like an encrypted USB drive)
 3. Physically deliver the storage medium to your communication partner
-4. Never transmit cypher books electronically
+4. Never transmit codebooks electronically
 
 **Note**: This physical exchange of key material is intentional and part of what makes OTP encryption so secure. By requiring an offline exchange, we eliminate many potential attack vectors.
 
@@ -57,25 +57,25 @@ For two people to communicate securely using OTP Messenger:
 
 To send an encrypted message:
 
-1. Open your cypher book (**File → Open Cypher Book**)
+1. Open your codebook (**File → Open Codebook**)
 2. Type your message in the "Send Message" text area
 3. Click the "Encrypt" button
 4. The encrypted message will appear in the "Receive Message" area
 5. Copy the encrypted message (it's automatically copied to your clipboard)
 6. Deliver the encrypted message to your recipient through any channel (email, social media, etc.)
 
-**Note**: Once key material is used for encryption, it cannot be reused without compromising security. The application tracks which portions of the cypher book have been used.
+**Note**: Once key material is used for encryption, it cannot be reused without compromising security. The application tracks which portions of the codebook have been used.
 
 ## Receiving Messages
 
 To decrypt a received message:
 
-1. Open your cypher book (**File → Open Cypher Book**)
+1. Open your codebook (**File → Open Codebook**)
 2. Paste the encrypted message into the "Receive Message" text area
 3. Click the "Decrypt" button
 4. The decrypted message will appear in the "Send Message" area
 
-**Note**: For successful decryption, you must use the same cypher book that was used for encryption, and the key material must not have been used for any other messages.
+**Note**: For successful decryption, you must use the same codebook that was used for encryption, and the key material must not have been used for any other messages.
 
 ## Security Features
 
@@ -94,9 +94,9 @@ You can configure your authentication level in the Security tab.
 
 ### Compartmentalization
 
-You can divide your cypher book into separate compartments for different purposes:
+You can divide your codebook into separate compartments for different purposes:
 
-1. Navigate to the Cypher Book tab
+1. Navigate to the Codebook tab
 2. Click "Create Compartment"
 3. Name your compartment and assign a size
 4. Use the Lock/Unlock features to secure individual compartments
@@ -147,7 +147,7 @@ This feature mirrors how agents would communicate concisely in sensitive situati
 
 If you're having trouble decrypting a message:
 
-1. Ensure both parties are using the exact same cypher book
+1. Ensure both parties are using the exact same codebook
 2. Verify that the key material hasn't been depleted
 3. Check that the entire encrypted message was copied correctly
 
@@ -155,7 +155,7 @@ If you're having trouble decrypting a message:
 
 When you receive a warning about low key material:
 
-1. Plan to exchange a new cypher book soon
+1. Plan to exchange a new codebook soon
 2. Be selective about which messages you send to conserve remaining key material
 3. Consider creating a smaller, emergency-only compartment
 
@@ -167,13 +167,13 @@ If you're having trouble with authentication:
 2. TOTP: Re-synchronize your authenticator app
 3. Biometric: Update your biometric data in your system settings
 
-### Lost Cypher Book
+### Lost Codebook
 
-If you lose your cypher book:
+If you lose your codebook:
 
 1. Notify your communication partners immediately
-2. Stop using any copies of that cypher book for new messages
-3. Exchange new cypher books as soon as possible
+2. Stop using any copies of that codebook for new messages
+3. Exchange new codebooks as soon as possible
 
 Remember that the security of OTP encryption depends on both the secrecy and the one-time use of the key material.
 
