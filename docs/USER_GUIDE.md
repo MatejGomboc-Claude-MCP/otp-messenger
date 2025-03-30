@@ -5,19 +5,46 @@ Welcome to OTP Messenger! This guide will help you get started with using the ap
 ## Table of Contents
 
 1. [Introduction](#introduction)
-2. [Getting Started](#getting-started)
-3. [Creating a Codebook](#creating-a-codebook)
-4. [Exchanging Codebooks](#exchanging-codebooks)
-5. [Sending Messages](#sending-messages)
-6. [Receiving Messages](#receiving-messages)
-7. [Security Features](#security-features)
-8. [Troubleshooting](#troubleshooting)
+2. [Historical Background](#historical-background)
+3. [Getting Started](#getting-started)
+4. [Creating a Codebook](#creating-a-codebook)
+5. [Exchanging Codebooks](#exchanging-codebooks)
+6. [Sending Messages](#sending-messages)
+7. [Receiving Messages](#receiving-messages)
+8. [Security Features](#security-features)
+9. [Troubleshooting](#troubleshooting)
 
 ## Introduction
 
 OTP Messenger is a secure messaging application that uses One-Time Pad (OTP) encryption, which is mathematically proven to be unbreakable when implemented correctly. Unlike other messaging apps, OTP Messenger requires both communicating parties to have identical copies of a pre-shared random key file (called a "codebook").
 
-This approach is inspired by Cold War era cryptographic techniques, particularly those used by intelligence agencies for their most secure communications.
+This approach is inspired by historical cryptographic techniques, from 19th century telegraph communications to Cold War era spy tradecraft.
+
+## Historical Background
+
+### Telegraph Origins (19th Century)
+
+The One-Time Pad encryption method was originally developed in the 19th century to secure sensitive banking and financial information transmitted via telegraph using Morse code. Key features of this early system:
+
+- Banks and businesses needed a way to protect sensitive financial transactions sent over public telegraph networks
+- Random key material was distributed on paper sheets or pads
+- Each key could only be used once (hence "one-time")
+- Telegraph operators would convert Morse code signals to text, then apply the encryption manually
+
+### Mathematical Perfection
+
+In 1949, Claude Shannon (considered the father of information theory) proved mathematically that the One-Time Pad is the only encryption system that offers "perfect secrecy" when implemented correctly.
+
+### Cold War Applications
+
+During the Cold War, intelligence agencies refined OTP systems for espionage:
+
+- Soviet KGB and GRU agents carried physical codebooks with random numbers
+- Numbers stations broadcast coded messages over shortwave radio
+- Agents used sophisticated verification and authentication techniques
+- Emergency destruction protocols were developed for compromised situations
+
+OTP Messenger implements modern digital versions of these historical techniques, bringing time-tested cryptographic methods into the digital age.
 
 ## Getting Started
 
@@ -79,7 +106,7 @@ To decrypt a received message:
 
 ## Security Features
 
-OTP Messenger includes several security features inspired by Cold War era cryptographic practices:
+OTP Messenger includes several security features inspired by historical cryptographic practices:
 
 ### Multi-factor Authentication
 
