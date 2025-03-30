@@ -27,6 +27,15 @@ OTP Messenger aims to implement a theoretically unbreakable encrypted messaging 
 - Multi-factor authentication options
 - Biometric authentication support
 
+### Cold War-Inspired Security Features
+
+This project draws inspiration from historical Cold War-era cryptographic systems, particularly the Soviet codebook approach. Key features inspired by this era include:
+
+- **Compartmentalized Cypher Books**: Separate sections of key material for different purposes, similar to mission-specific sections in Soviet codebooks
+- **Emergency Destruction Protocol**: Quick and secure deletion of key material when compromised
+- **Authentication Material**: Reserved portions of the key material for verifying the identity of the communicating parties
+- **Duress Codes**: Special authentication sequences that silently indicate the user is under duress
+
 ## Development Roadmap and TODO List
 
 ### Core Encryption
@@ -52,6 +61,7 @@ OTP Messenger aims to implement a theoretically unbreakable encrypted messaging 
 - [ ] Add message integrity verification
 - [ ] Develop protection against replay attacks
 - [ ] Create secure key depletion tracking
+- [ ] Implement Cold War-inspired security features
 
 ## Technical Challenges
 
