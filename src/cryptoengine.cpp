@@ -32,6 +32,13 @@ bool CryptoEngine::setCodeBook(CodeBook *book)
     return true;
 }
 
+// Backward compatibility method for CypherBook -> CodeBook transition
+bool CryptoEngine::setCypherBook(CodeBook *book)
+{
+    // This is just an alias for setCodeBook for backward compatibility
+    return setCodeBook(book);
+}
+
 QByteArray CryptoEngine::encrypt(const QByteArray &plaintext, quint64 &keyOffset)
 {
     if (!codeBook) {
