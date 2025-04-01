@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QSettings>
 
-#include "cypherbook.h"
+#include "codebook.h"
 #include "cryptoengine.h"
 #include "messageprotocol.h"
 #include "authentication.h"
@@ -18,7 +18,7 @@ class MainWindow;
  * 
  * This class coordinates between the UI components and the core classes that handle
  * the cryptographic operations, message formatting, and authentication. It manages
- * the cypher book files, handles user interactions, and provides feedback on operations.
+ * the codebook files, handles user interactions, and provides feedback on operations.
  */
 class MainWindow : public QMainWindow
 {
@@ -84,14 +84,14 @@ private:
     Ui::MainWindow *ui;
     
     // Core components
-    CypherBook *cypherBook;
+    CodeBook *codeBook;
     CryptoEngine *cryptoEngine;
     MessageProtocol *messageProtocol;
     Authentication *authentication;
     
     // State tracking
-    QString cypherBookPath;
-    bool cypherBookModified;
+    QString codeBookPath;
+    bool codeBookModified;
     
     /**
      * @brief Initialize core components
@@ -120,11 +120,11 @@ private:
     bool maybeSave();
     
     /**
-     * @brief Load a cypher book from file
-     * @param path The path to the cypher book file
+     * @brief Load a codebook from file
+     * @param path The path to the codebook file
      * @return True if successful, false otherwise
      */
-    bool loadCypherBook(const QString &path);
+    bool loadCodeBook(const QString &path);
     
     /**
      * @brief Update status bar information
@@ -132,9 +132,9 @@ private:
     void updateStatusBar();
     
     /**
-     * @brief Update the cypher book information display
+     * @brief Update the codebook information display
      */
-    void updateCypherBookInfo();
+    void updateCodeBookInfo();
     
     /**
      * @brief Update the compartments table
