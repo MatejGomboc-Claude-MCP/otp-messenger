@@ -13,8 +13,8 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), 
-      cypherBook(nullptr), cryptoEngine(nullptr), messageProtocol(nullptr),
-      authentication(nullptr), cypherBookModified(false)
+      codeBook(nullptr), cryptoEngine(nullptr), messageProtocol(nullptr),
+      authentication(nullptr), codeBookModified(false)
 {
     ui->setupUi(this);
     
@@ -36,15 +36,15 @@ MainWindow::~MainWindow()
     // Save settings
     saveSettings();
     
-    // Close cypher book if open
-    if (cypherBook && cypherBook->isOpen()) {
-        cypherBook->close();
+    // Close codebook if open
+    if (codeBook && codeBook->isOpen()) {
+        codeBook->close();
     }
     
     // Delete components
     delete messageProtocol;
     delete cryptoEngine;
-    delete cypherBook;
+    delete codeBook;
     delete authentication;
     
     delete ui;
@@ -61,8 +61,8 @@ void MainWindow::on_actionNew_Cypher_Book_triggered()
     
     // Ask for file location
     QString fileName = QFileDialog::getSaveFileName(this,
-        tr("Create New Cypher Book"), QString(),
-        tr("Cypher Books (*.cypherbook);;All Files (*)"));
+        tr("Create New Codebook"), QString(),
+        tr("Codebooks (*.codebook);;All Files (*)"));
     
     if (fileName.isEmpty()) {
         return;
@@ -70,7 +70,7 @@ void MainWindow::on_actionNew_Cypher_Book_triggered()
     
     // Ask for size
     bool ok;
-    int sizeMB = QInputDialog::getInt(this, tr("Cypher Book Size"),
+    int sizeMB = QInputDialog::getInt(this, tr("Codebook Size"),
         tr("Enter size in megabytes (1-1024):"), 10, 1, 1024, 1, &ok);
     
     if (!ok) {
@@ -80,20 +80,20 @@ void MainWindow::on_actionNew_Cypher_Book_triggered()
     // Convert to bytes
     quint64 sizeBytes = static_cast<quint64>(sizeMB) * 1024 * 1024;
     
-    // Create new cypher book
-    if (cypherBook->create(fileName, sizeBytes)) {
-        cypherBookPath = fileName;
-        cypherBookModified = false;
+    // Create new codebook
+    if (codeBook->create(fileName, sizeBytes)) {
+        codeBookPath = fileName;
+        codeBookModified = false;
         ui->lineEditCypherBook->setText(fileName);
         
-        // Update cypher book information
-        updateCypherBookInfo();
+        // Update codebook information
+        updateCodeBookInfo();
         
-        QMessageBox::information(this, tr("Cypher Book Created"),
-            tr("New cypher book created successfully."));
+        QMessageBox::information(this, tr("Codebook Created"),
+            tr("New codebook created successfully."));
     } else {
         QMessageBox::critical(this, tr("Error"),
-            tr("Failed to create cypher book."));
+            tr("Failed to create codebook."));
     }
 }
 
@@ -106,42 +106,42 @@ void MainWindow::on_actionOpen_Cypher_Book_triggered()
     
     // Ask for file location
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Open Cypher Book"), QString(),
-        tr("Cypher Books (*.cypherbook);;All Files (*)"));
+        tr("Open Codebook"), QString(),
+        tr("Codebooks (*.codebook);;All Files (*)"));
     
     if (fileName.isEmpty()) {
         return;
     }
     
-    // Open cypher book
-    if (loadCypherBook(fileName)) {
-        cypherBookPath = fileName;
-        cypherBookModified = false;
+    // Open codebook
+    if (loadCodeBook(fileName)) {
+        codeBookPath = fileName;
+        codeBookModified = false;
         ui->lineEditCypherBook->setText(fileName);
         
-        // Update cypher book information
-        updateCypherBookInfo();
+        // Update codebook information
+        updateCodeBookInfo();
     } else {
         QMessageBox::critical(this, tr("Error"),
-            tr("Failed to open cypher book."));
+            tr("Failed to open codebook."));
     }
 }
 
 void MainWindow::on_actionSave_Cypher_Book_triggered()
 {
-    // Save the cypher book
-    if (!cypherBook || !cypherBook->isOpen()) {
+    // Save the codebook
+    if (!codeBook || !codeBook->isOpen()) {
         QMessageBox::warning(this, tr("Warning"),
-            tr("No cypher book is currently open."));
+            tr("No codebook is currently open."));
         return;
     }
     
-    if (cypherBook->save()) {
-        cypherBookModified = false;
-        statusBar()->showMessage(tr("Cypher book saved"), 3000);
+    if (codeBook->save()) {
+        codeBookModified = false;
+        statusBar()->showMessage(tr("Codebook saved"), 3000);
     } else {
         QMessageBox::critical(this, tr("Error"),
-            tr("Failed to save cypher book."));
+            tr("Failed to save codebook."));
     }
 }
 
@@ -220,10 +220,10 @@ void MainWindow::on_pushButtonNewCypherBook_clicked()
 
 void MainWindow::on_pushButtonSend_clicked()
 {
-    // Check if a cypher book is open
-    if (!cypherBook || !cypherBook->isOpen()) {
+    // Check if a codebook is open
+    if (!codeBook || !codeBook->isOpen()) {
         QMessageBox::warning(this, tr("Warning"),
-            tr("You must open a cypher book first."));
+            tr("You must open a codebook first."));
         return;
     }
     
@@ -273,10 +273,10 @@ void MainWindow::on_pushButtonClearReceive_clicked()
 
 void MainWindow::on_pushButtonDecrypt_clicked()
 {
-    // Check if a cypher book is open
-    if (!cypherBook || !cypherBook->isOpen()) {
+    // Check if a codebook is open
+    if (!codeBook || !codeBook->isOpen()) {
         QMessageBox::warning(this, tr("Warning"),
-            tr("You must open a cypher book first."));
+            tr("You must open a codebook first."));
         return;
     }
     
@@ -399,23 +399,23 @@ void MainWindow::on_pushButtonLoadFromFile_clicked()
 void MainWindow::initializeComponents()
 {
     // Create components
-    cypherBook = new CypherBook(this);
+    codeBook = new CodeBook(this);
     cryptoEngine = new CryptoEngine(this);
     messageProtocol = new MessageProtocol(this);
     authentication = new Authentication(this);
     
     // Connect components
-    cryptoEngine->setCypherBook(cypherBook);
+    cryptoEngine->setCodeBook(codeBook);
     messageProtocol->setCryptoEngine(cryptoEngine);
 }
 
 void MainWindow::setupConnections()
 {
-    // Connect cypher book signals
-    connect(cypherBook, &CypherBook::error, this, &MainWindow::handleError);
-    connect(cypherBook, &CypherBook::keyMaterialLow, this, &MainWindow::handleKeyMaterialLow);
-    connect(cypherBook, &CypherBook::emergencyProtocolExecuted, this, &MainWindow::handleEmergencyProtocol);
-    connect(cypherBook, &CypherBook::duressDetected, this, &MainWindow::handleDuressDetected);
+    // Connect codebook signals
+    connect(codeBook, &CodeBook::error, this, &MainWindow::handleError);
+    connect(codeBook, &CodeBook::keyMaterialLow, this, &MainWindow::handleKeyMaterialLow);
+    connect(codeBook, &CodeBook::emergencyProtocolExecuted, this, &MainWindow::handleEmergencyProtocol);
+    connect(codeBook, &CodeBook::duressDetected, this, &MainWindow::handleDuressDetected);
     
     // Connect crypto engine signals
     connect(cryptoEngine, &CryptoEngine::error, this, &MainWindow::handleError);
@@ -443,11 +443,11 @@ void MainWindow::loadSettings()
     restoreGeometry(settings.value("MainWindow/Geometry").toByteArray());
     restoreState(settings.value("MainWindow/State").toByteArray());
     
-    // Load last cypher book path
-    QString lastPath = settings.value("CypherBook/LastPath").toString();
+    // Load last codebook path
+    QString lastPath = settings.value("CodeBook/LastPath").toString();
     if (!lastPath.isEmpty()) {
         // Don't automatically open it, just store the path
-        cypherBookPath = lastPath;
+        codeBookPath = lastPath;
     }
 }
 
@@ -459,24 +459,24 @@ void MainWindow::saveSettings()
     settings.setValue("MainWindow/Geometry", saveGeometry());
     settings.setValue("MainWindow/State", saveState());
     
-    // Save last cypher book path
-    if (!cypherBookPath.isEmpty()) {
-        settings.setValue("CypherBook/LastPath", cypherBookPath);
+    // Save last codebook path
+    if (!codeBookPath.isEmpty()) {
+        settings.setValue("CodeBook/LastPath", codeBookPath);
     }
 }
 
 bool MainWindow::maybeSave()
 {
-    if (!cypherBook || !cypherBook->isOpen() || !cypherBookModified) {
+    if (!codeBook || !codeBook->isOpen() || !codeBookModified) {
         return true;
     }
     
     QMessageBox::StandardButton ret = QMessageBox::warning(this, tr("OTP Messenger"),
-        tr("The cypher book has been modified.\nDo you want to save your changes?"),
+        tr("The codebook has been modified.\nDo you want to save your changes?"),
         QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
     
     if (ret == QMessageBox::Save) {
-        return cypherBook->save();
+        return codeBook->save();
     } else if (ret == QMessageBox::Cancel) {
         return false;
     }
@@ -484,30 +484,30 @@ bool MainWindow::maybeSave()
     return true;
 }
 
-bool MainWindow::loadCypherBook(const QString &path)
+bool MainWindow::loadCodeBook(const QString &path)
 {
-    if (cypherBook->isOpen()) {
-        cypherBook->close();
+    if (codeBook->isOpen()) {
+        codeBook->close();
     }
     
-    return cypherBook->open(path);
+    return codeBook->open(path);
 }
 
 void MainWindow::updateStatusBar()
 {
-    if (cypherBook && cypherBook->isOpen()) {
-        double percentRemaining = cypherBook->getPercentageRemaining() * 100.0;
-        statusBar()->showMessage(tr("Cypher book: %1 - Remaining: %2%")
-            .arg(QFileInfo(cypherBookPath).fileName())
+    if (codeBook && codeBook->isOpen()) {
+        double percentRemaining = codeBook->getPercentageRemaining() * 100.0;
+        statusBar()->showMessage(tr("Codebook: %1 - Remaining: %2%")
+            .arg(QFileInfo(codeBookPath).fileName())
             .arg(percentRemaining, 0, 'f', 1));
     } else {
-        statusBar()->showMessage(tr("No cypher book open"));
+        statusBar()->showMessage(tr("No codebook open"));
     }
 }
 
-void MainWindow::updateCypherBookInfo()
+void MainWindow::updateCodeBookInfo()
 {
-    if (!cypherBook || !cypherBook->isOpen()) {
+    if (!codeBook || !codeBook->isOpen()) {
         // Clear the info fields
         ui->labelFileNameValue->setText(tr("Not loaded"));
         ui->labelSizeValue->setText(tr("0 bytes"));
@@ -526,31 +526,31 @@ void MainWindow::updateCypherBookInfo()
     }
     
     // Set the file name
-    ui->labelFileNameValue->setText(QFileInfo(cypherBookPath).fileName());
+    ui->labelFileNameValue->setText(QFileInfo(codeBookPath).fileName());
     
     // Set the size
-    quint64 totalSize = cypherBook->getTotalSize();
+    quint64 totalSize = codeBook->getTotalSize();
     ui->labelSizeValue->setText(formatByteSize(totalSize));
     
     // Set the used space
-    quint64 usedSize = totalSize - cypherBook->getUnusedSize();
+    quint64 usedSize = totalSize - codeBook->getUnusedSize();
     double usedPercent = static_cast<double>(usedSize) / static_cast<double>(totalSize) * 100.0;
     ui->labelUsedValue->setText(tr("%1 (%2%)")
         .arg(formatByteSize(usedSize))
         .arg(usedPercent, 0, 'f', 1));
     
     // Set the remaining space
-    quint64 remainingSize = cypherBook->getUnusedSize();
+    quint64 remainingSize = codeBook->getUnusedSize();
     double remainingPercent = static_cast<double>(remainingSize) / static_cast<double>(totalSize) * 100.0;
     ui->labelRemainingValue->setText(tr("%1 (%2%)")
         .arg(formatByteSize(remainingSize))
         .arg(remainingPercent, 0, 'f', 1));
     
     // Set the number of compartments
-    QList<QString> compartmentNames = cypherBook->getCompartmentNames();
+    QList<QString> compartmentNames = codeBook->getCompartmentNames();
     ui->labelCompartmentsValue->setText(QString::number(compartmentNames.size()));
     
-    // Set the created date (not implemented in CypherBook class yet)
+    // Set the created date (not implemented in CodeBook class yet)
     ui->labelCreatedValue->setText(tr("Unavailable"));
     
     // Update the compartments table
@@ -568,17 +568,17 @@ void MainWindow::updateCompartmentsTable()
     // Clear the table first
     ui->tableWidgetCompartments->setRowCount(0);
     
-    if (!cypherBook || !cypherBook->isOpen()) {
+    if (!codeBook || !codeBook->isOpen()) {
         return;
     }
     
     // Get compartment names
-    QList<QString> compartmentNames = cypherBook->getCompartmentNames();
+    QList<QString> compartmentNames = codeBook->getCompartmentNames();
     
     // Set the row count
     ui->tableWidgetCompartments->setRowCount(compartmentNames.size());
     
-    // Populate the table (actual compartment details would need additional API in CypherBook class)
+    // Populate the table (actual compartment details would need additional API in CodeBook class)
     for (int i = 0; i < compartmentNames.size(); ++i) {
         // Name
         ui->tableWidgetCompartments->setItem(i, 0, new QTableWidgetItem(compartmentNames[i]));
@@ -603,13 +603,13 @@ void MainWindow::updateKeyMaterialVisualizer()
     QGraphicsScene *scene = new QGraphicsScene(this);
     ui->graphicsViewKeyMaterial->setScene(scene);
     
-    if (!cypherBook || !cypherBook->isOpen()) {
+    if (!codeBook || !codeBook->isOpen()) {
         return;
     }
     
-    // Get cypher book details
-    quint64 totalSize = cypherBook->getTotalSize();
-    quint64 usedSize = totalSize - cypherBook->getUnusedSize();
+    // Get codebook details
+    quint64 totalSize = codeBook->getTotalSize();
+    quint64 usedSize = totalSize - codeBook->getUnusedSize();
     
     // Calculate dimensions
     int width = ui->graphicsViewKeyMaterial->width() - 10;
@@ -712,7 +712,7 @@ void MainWindow::handleError(const QString &errorMessage)
 void MainWindow::handleKeyMaterialLow(double percentageRemaining)
 {
     QMessageBox::warning(this, tr("Low Key Material"),
-        tr("Your cypher book is running low on key material. Only %1% remaining.")
+        tr("Your codebook is running low on key material. Only %1% remaining.")
         .arg(percentageRemaining * 100.0, 0, 'f', 1));
 }
 
