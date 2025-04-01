@@ -26,7 +26,6 @@ This approach is inspired by historical cryptographic techniques, from 19th cent
 
 The One-Time Pad encryption method was originally developed in the 19th century to secure sensitive banking and financial information transmitted via telegraph using Morse code. Key features of this early system:
 
-- Banks and businesses needed a way to protect sensitive financial transactions sent over public telegraph networks
 - Random key material was distributed on paper sheets or pads
 - Each key could only be used once (hence "one-time")
 - Telegraph operators would convert Morse code signals to text, then apply the encryption manually
@@ -50,9 +49,9 @@ OTP Messenger implements modern digital versions of these historical techniques,
 
 ### Installation
 
-1. Download the latest version from the [Releases](https://github.com/MatejGomboc-Claude-MCP/otp-messenger/releases) page.
-2. Install the application following the instructions for your operating system.
-3. Launch OTP Messenger.
+1. Download the latest version from the [Releases](https://github.com/MatejGomboc-Claude-MCP/otp-messenger/releases) page
+2. Install the application following the instructions for your operating system
+3. Launch OTP Messenger
 
 ### First Launch
 
@@ -128,7 +127,7 @@ You can divide your codebook into separate compartments for different purposes:
 3. Name your compartment and assign a size
 4. Use the Lock/Unlock features to secure individual compartments
 
-This feature is inspired by mission-specific sections in Soviet codebooks.
+This feature is inspired by mission-specific sections in codebooks.
 
 ### Emergency Destruction
 
