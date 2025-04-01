@@ -17,7 +17,7 @@ This project is not intended for production use or in environments requiring hig
 
 ## Project Overview
 
-OTP Messenger aims to implement a theoretically unbreakable encrypted messaging system using the One-Time Pad encryption method. Keys are stored in large binary files ("codebooks") that are manually exchanged between parties through offline means (e.g., USB sticks).
+OTP Messenger implements a theoretically unbreakable encrypted messaging system using the One-Time Pad encryption method. Keys are stored in large binary files ("codebooks") that are manually exchanged between parties through offline means (e.g., USB sticks).
 
 ### Key Features
 
@@ -26,55 +26,41 @@ OTP Messenger aims to implement a theoretically unbreakable encrypted messaging 
 - Secure codebook management
 - Multi-factor authentication options
 - Biometric authentication support
-- Cold War inspired verification protocols
+- Historically inspired verification protocols
 
 ## Historical Context
 
 ### Origins of One-Time Pad Encryption
 
-The One-Time Pad encryption method has roots going back to the 19th century, predating the Cold War era by many decades:
+The One-Time Pad encryption method has roots going back to the 19th century:
 
-- **Telegraph Era Origins**: OTP was originally developed in the 19th century to securely transmit sensitive banking and financial information over telegraph lines using Morse code. It solved the critical problem of secure communication over public telegraph networks.
+- **Telegraph Era Origins**: OTP was originally developed in the 19th century to securely transmit sensitive banking and financial information over telegraph lines using Morse code.
 
-- **Vernam Cipher**: The method was formally patented in 1919 by Gilbert Vernam, an engineer at AT&T Bell Labs, although the core concepts had been in use earlier. Vernam's system used paper tapes with random key material to encrypt telegraph messages.
+- **Vernam Cipher**: The method was formally patented in 1919 by Gilbert Vernam, an engineer at AT&T Bell Labs, although the core concepts had been in use earlier.
 
 - **Mathematical Perfection**: In 1949, Claude Shannon (the father of information theory) mathematically proved that the One-Time Pad is unbreakable when implemented correctly - the only encryption system with this distinction.
 
-- **Commercial Applications**: Before becoming a staple of espionage, OTP was used by banks, diplomatic services, and businesses to protect sensitive communications from commercial rivals and other threats.
+### Historical Applications
 
-### Cold War Cryptography
-
-The Soviet Union was a dedicated user of One-Time Pad encryption, with KGB and GRU agents relying on physical codebooks for secure communications:
+Various organizations used One-Time Pad encryption for secure communications:
 
 - **Physical Codebooks**: Agents were issued small, printed booklets with pages of random numbers. Our digital "codebooks" are modeled on these physical artifacts.
 
-- **Usage Tracking**: Soviet agents would physically mark off portions of the codebook after use to prevent reuse. Our software implements this through digital tracking of key material.
+- **Usage Tracking**: Users would physically mark off portions of the codebook after use to prevent reuse. Our software implements this through digital tracking of key material.
 
-- **VENONA Project**: When Soviet operators reused portions of their one-time pads during WWII and after, Western cryptanalysts in the VENONA project were able to crack some messages - highlighting the critical importance of never reusing key material.
-
-### Numbers Stations
-
-- Mysterious shortwave radio broadcasts consisting of spoken numbers or musical tones were used to transmit encoded messages to field agents. These broadcasts continue to this day (e.g., UVB-76 "The Buzzer").
-
-- These stations transmitted OTP-encrypted messages that would be meaningless without the corresponding codebook.
+- **VENONA Project**: When operators reused portions of their one-time pads during WWII and after, cryptanalysts were able to crack some messages - highlighting the critical importance of never reusing key material.
 
 ### Authentication Techniques
 
-- **Call-Response Patterns**: Field agents used predetermined challenge and response phrases to verify identities, which we've implemented digitally.
+- **Challenge-Response Patterns**: Predetermined challenge and response phrases to verify identities, which we've implemented digitally.
 
 - **Control Words**: Messages contained special "control words" that helped verify authenticity and integrity. Our message protocol includes similar verification mechanisms.
 
 ### Destruction Protocols
 
-- Codebooks were designed to be quickly destroyed if an agent was compromised. They often used special inks that would dissolve when exposed to water.
+- Codebooks were designed to be quickly destroyed if compromised, often using special inks that would dissolve when exposed to water.
 
 - Our digital implementation includes secure wiping features inspired by these emergency protocols.
-
-### Dead Drops & Key Exchange
-
-- Physical key material exchange happened through "dead drops" - predetermined locations where items could be left by one agent and retrieved by another without direct contact.
-
-- Our application's assumption of manual codebook exchange (via USB sticks) mirrors this operational security principle.
 
 ## Getting Started
 
@@ -109,87 +95,49 @@ cmake --build .
 ./OTPMessenger
 ```
 
-## Usage Guide
+## Documentation
 
-### Setting Up
+Detailed documentation is available in the docs directory:
 
-1. **First Launch**
-   - On first launch, you'll be presented with a disclaimer that you must accept to use the application
-   - You'll be prompted to create a password and set up your desired authentication method
+- **[User Guide](docs/USER_GUIDE.md)**: Instructions for using the application
+- **[Developer Guide](docs/DEVELOPER_GUIDE.md)**: Implementation details and architecture overview
+- **[UI Update Guide](docs/UI_UPDATE_GUIDE.md)**: Guide for updating the UI elements
 
-2. **Creating a Codebook**
-   - Go to File → New Codebook
-   - Choose a file location and size (larger is more secure but uses more storage)
-   - The application will generate random key material
+## Core Components
 
-3. **Exchanging Codebooks**
-   - Copy your codebook file to a USB drive
-   - Physically deliver it to your communication partner
-   - Both parties must have identical codebook files
+### CodeBook
 
-### Sending Messages
+Manages the key material files with historically-inspired features:
+- Compartmentalization for mission-specific key sections
+- Emergency destruction protocols
+- Authentication sections
+- Duress codes
 
-1. Select your codebook file
-2. Type your message
-3. Click "Send" to encrypt
-4. Copy the encrypted message or save to a file
-5. Deliver through any channel (even insecure ones)
+### CryptoEngine
 
-### Receiving Messages
+Handles the OTP encryption/decryption operations:
+- XOR-based encryption (true OTP)
+- Message Authentication Codes (MACs) for integrity
+- Anti-replay protections
 
-1. Paste the encrypted message
-2. Click "Decrypt"
-3. If successful, the decrypted message will be displayed
+### MessageProtocol
 
-### Security Features
+Implements message formatting and verification techniques:
+- Challenge-response protocols
+- Code phrase verification
+- Hidden duress indicators
+- Key synchronization messaging
 
-- **Authentication Levels**
-  - Basic: Password only
-  - Standard: Password + TOTP
-  - High: Password + Biometric
-  - Maximum: Password + Biometric + Hardware token
+### Authentication
 
-- **Emergency Protocols**
-  - Set up an emergency destruction code
-  - If entered, key material will be securely wiped
+Multi-factor authentication system:
+- Password-based authentication
+- Time-based One-Time Password (TOTP)
+- Biometric integration
+- Hardware token support
+- Tiered security levels
 
-- **Duress Indicators**
-  - Create special messages that appear normal but indicate duress
-  - Recipients can detect these indicators
-
-## Implemented Components
-
-### Core Libraries
-
-1. **CodeBook**  
-   Manages the key material files with historically-inspired features:
-   - Compartmentalization for mission-specific key sections
-   - Emergency destruction protocols
-   - Authentication sections
-   - Duress codes
-
-2. **CryptoEngine**  
-   Handles the OTP encryption/decryption operations:
-   - XOR-based encryption (true OTP)
-   - Message Authentication Codes (MACs) for integrity
-   - Anti-replay protections
-
-3. **MessageProtocol**  
-   Implements message formatting and verification techniques:
-   - Challenge-response protocols
-   - Code phrase verification
-   - Hidden duress indicators
-   - Key synchronization messaging
-
-4. **Authentication**  
-   Multi-factor authentication system:
-   - Password-based authentication
-   - Time-based One-Time Password (TOTP)
-   - Biometric integration
-   - Hardware token support
-   - Tiered security levels
-
-## Development Roadmap and TODO List
+## Development Roadmap
 
 ### Core Encryption
 - [x] Implement true random number generation for codebooks
@@ -215,43 +163,6 @@ cmake --build .
 - [x] Develop protection against replay attacks
 - [x] Create secure key depletion tracking
 - [x] Implement historically-inspired security features
-
-## For Developers
-
-### Architecture Overview
-
-The application follows a modular design with clear separation of concerns:
-
-```
-OTPMessenger
-├── src/
-│   ├── main.cpp                  # Application entry point
-│   ├── mainwindow.h/cpp          # Main UI
-│   ├── codebook.h/cpp            # Key material management
-│   ├── cryptoengine.h/cpp        # Encryption/decryption
-│   ├── authentication.h/cpp      # Multi-factor authentication
-│   └── messageprotocol.h/cpp     # Message formatting & verification
-├── resources/                    # Icons, styles, etc.
-└── CMakeLists.txt                # Build configuration
-```
-
-### Key Classes and Their Responsibilities
-
-- **MainWindow**: User interface and coordination between components
-- **CodeBook**: Manages storage and access to key material
-- **CryptoEngine**: Performs cryptographic operations
-- **Authentication**: Handles user identity verification
-- **MessageProtocol**: Formats and parses messages
-
-### Extending the Application
-
-Here are some areas where contributors could enhance the application:
-
-1. **UI Improvements**: The current UI is minimal and could be enhanced
-2. **Additional Authentication Methods**: Support for new biometric or token types
-3. **Network Transport**: Optional encrypted network transport
-4. **Improved Randomness**: Enhanced entropy gathering for key generation
-5. **Group Messaging**: Extensions for secure group communications
 
 ## Contributing
 

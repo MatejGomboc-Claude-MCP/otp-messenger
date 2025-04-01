@@ -15,7 +15,8 @@ OTPMessenger
 │   ├── cryptoengine.h/cpp        # Encryption/decryption
 │   ├── authentication.h/cpp      # Multi-factor authentication
 │   └── messageprotocol.h/cpp     # Message formatting & verification
-└── resources/                    # Icons, styles, etc.
+├── resources/                    # Icons, styles, etc.
+└── docs/                         # Documentation
 ```
 
 ### Key Classes and Their Responsibilities
@@ -58,12 +59,12 @@ The components interact in the following way:
    - Calls appropriate methods on the backend components
    - Displays results and feedback
 
-2. **Codebook & Crypto Engine**
+2. **CodeBook & CryptoEngine**
    - `CryptoEngine` holds a reference to `CodeBook` to get key material
    - When encrypting/decrypting, `CryptoEngine` requests key material from `CodeBook`
    - After using key material, `CryptoEngine` tells `CodeBook` to mark it as used
 
-3. **Message Protocol & Crypto Engine**
+3. **MessageProtocol & CryptoEngine**
    - `MessageProtocol` holds a reference to `CryptoEngine`
    - When creating messages, `MessageProtocol` uses `CryptoEngine` to encrypt data
    - When parsing messages, `MessageProtocol` uses `CryptoEngine` to decrypt data
@@ -172,39 +173,36 @@ The biometric authentication is platform-dependent:
 - On Windows, it uses Windows Hello
 - On Android/iOS, it uses the built-in biometric APIs
 
-## Cold War Inspired Features
+## Security Features
 
 ### Compartmentalization
 
-Inspired by mission-specific sections in Soviet codebooks:
+Inspired by mission-specific sections in codebooks:
 - Each compartment is a separate section of key material
 - Compartments can be locked/unlocked independently
 - Compartments can have different purposes (regular messages, authentication, etc.)
 
 ### Emergency Protocols
 
-Inspired by agent emergency procedures:
+Inspired by emergency procedures:
 - Emergency destruction wipes key material securely
 - Multi-pass secure deletion
 - Emergency codes trigger automatic destruction
 
 ### Duress Indicators
 
-Inspired by duress signaling techniques:
 - Hidden markers in messages indicate duress
 - Text appears normal but contains subtle patterns
 - Can be detected by the recipient
 
 ### Challenge-Response
 
-Inspired by agent authentication methods:
 - Predefined challenges with expected responses
 - Used to verify identity
 - Time-limited to prevent replay attacks
 
 ### Code Phrases
 
-Inspired by field communication techniques:
 - Predefined phrases with specific meanings
 - Used for quick, secure signaling
 - Meaning only known to authorized parties
@@ -243,7 +241,7 @@ The cardinal rule of OTP:
 
 ### Network Transport
 
-While the current implementation assumes manual exchange of messages (matching the Cold War inspiration), a network transport layer could be added:
+While the current implementation assumes manual exchange of messages, a network transport layer could be added:
 - End-to-end encrypted connections
 - P2P communication
 - Ephemeral messaging
@@ -297,6 +295,5 @@ For authentication troubleshooting:
 When contributing to OTP Messenger:
 1. Follow the existing code style and architecture
 2. Add comprehensive documentation for new features
-3. Maintain backwards compatibility with existing codebooks
-4. Preserve the core OTP security principles
-5. Respect the Cold War inspirations that make this project unique
+3. Preserve the core OTP security principles
+4. Respect the historical inspirations that make this project unique

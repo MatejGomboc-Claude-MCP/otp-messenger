@@ -4,7 +4,7 @@ This document provides guidance for updating the UI elements to align with the C
 
 ## Background
 
-The OTP Messenger codebase uses the `CodeBook` class for managing encryption key material. However, the UI elements in the `.ui` files currently use outdated naming. This guide describes the UI updates needed to align the UI with the code.
+The OTP Messenger codebase has been standardized to use the `CodeBook` class for managing encryption key material. However, the UI elements in the `.ui` files still use outdated naming conventions. This guide describes the UI updates needed to align the UI with the code.
 
 ## Required UI Changes
 
@@ -20,16 +20,16 @@ The following UI elements in `src/mainwindow.ui` should be renamed:
    - `pushButtonNewCypherBook` → `pushButtonNewCodeBook`
 
 3. **Labels**:
-   - Any labels referring to "Cypher Book" should be updated to "Code Book"
+   - Any labels referring to "Cypher Book" should be updated to "Code Book" or "Codebook"
 
 4. **Line Edits**:
    - `lineEditCypherBook` → `lineEditCodeBook`
 
 5. **Tab Titles**:
-   - Any tab titles referring to "Cypher Book" should be updated to "Code Book"
+   - Any tab titles referring to "Cypher Book" should be updated to "Codebook"
 
 6. **Dialog Titles**:
-   - All dialog titles should be updated to use "Codebook" consistently
+   - All dialog titles should use "Codebook" consistently
 
 ## How to Update the UI File
 
@@ -41,4 +41,4 @@ The following UI elements in `src/mainwindow.ui` should be renamed:
 
 ## Implementation Note
 
-Until the UI elements are renamed, the C++ code contains the necessary connections to work with the current UI element names, with comments indicating where names need to be updated.
+Until the UI elements are renamed, the C++ code contains the necessary connections to work with the current UI element names, with comments indicating where names need to be updated. After updating the UI file, no further code changes should be needed as the connections are already properly set up.
