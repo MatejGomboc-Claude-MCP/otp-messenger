@@ -54,7 +54,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionNew_Cypher_Book_triggered()
 {
-    // Note: Action name still uses old naming convention, but functionality is for CodeBook
+    // Note: Action name in UI still needs to be updated
     
     // Check if we need to save any changes
     if (!maybeSave()) {
@@ -64,15 +64,14 @@ void MainWindow::on_actionNew_Cypher_Book_triggered()
     // Ask for file location
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Create New Codebook"), QString(),
-        tr("Codebooks (*.codebook);;Legacy Format (*.cypherbook);;All Files (*)"));
+        tr("Codebooks (*.codebook);;All Files (*)"));
     
     if (fileName.isEmpty()) {
         return;
     }
     
     // Ensure the file has the correct extension
-    if (!fileName.endsWith(".codebook", Qt::CaseInsensitive) && 
-        !fileName.endsWith(".cypherbook", Qt::CaseInsensitive)) {
+    if (!fileName.endsWith(".codebook", Qt::CaseInsensitive)) {
         fileName.append(".codebook");
     }
     
@@ -107,17 +106,17 @@ void MainWindow::on_actionNew_Cypher_Book_triggered()
 
 void MainWindow::on_actionOpen_Cypher_Book_triggered()
 {
-    // Note: Action name still uses old naming convention, but functionality is for CodeBook
+    // Note: Action name in UI still needs to be updated
     
     // Check if we need to save any changes
     if (!maybeSave()) {
         return;
     }
     
-    // Ask for file location - support both new and legacy extensions
+    // Ask for file location
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Open Codebook"), QString(),
-        tr("All Codebooks (*.codebook *.cypherbook);;Codebooks (*.codebook);;Legacy Format (*.cypherbook);;All Files (*)"));
+        tr("Codebooks (*.codebook);;All Files (*)"));
     
     if (fileName.isEmpty()) {
         return;
@@ -139,7 +138,7 @@ void MainWindow::on_actionOpen_Cypher_Book_triggered()
 
 void MainWindow::on_actionSave_Cypher_Book_triggered()
 {
-    // Note: Action name still uses old naming convention, but functionality is for CodeBook
+    // Note: Action name in UI still needs to be updated
     
     // Save the codebook
     if (!codeBook || !codeBook->isOpen()) {
@@ -222,13 +221,13 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_pushButtonOpenCypherBook_clicked()
 {
-    // Note: Button name still uses old naming convention, but functionality is for CodeBook
+    // Note: Button name in UI still needs to be updated
     on_actionOpen_Cypher_Book_triggered();
 }
 
 void MainWindow::on_pushButtonNewCypherBook_clicked()
 {
-    // Note: Button name still uses old naming convention, but functionality is for CodeBook
+    // Note: Button name in UI still needs to be updated
     on_actionNew_Cypher_Book_triggered();
 }
 
