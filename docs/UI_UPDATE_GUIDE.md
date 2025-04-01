@@ -1,10 +1,10 @@
 # UI Element Update Guide
 
-This document provides guidance for updating the UI elements from the old naming convention (`CypherBook`) to the new standardized naming (`CodeBook`).
+This document provides guidance for updating the UI elements to align with the CodeBook naming convention adopted in the codebase.
 
 ## Background
 
-The OTP Messenger codebase has been refactored to remove redundant classes and standardize on `CodeBook` instead of `CypherBook`. While all C++ code has been updated, the UI elements in the `.ui` files still use the old naming convention. This guide describes the needed UI updates to complete the transition.
+The OTP Messenger codebase uses the `CodeBook` class for managing encryption key material. However, the UI elements in the `.ui` files currently use outdated naming. This guide describes the UI updates needed to align the UI with the code.
 
 ## Required UI Changes
 
@@ -20,29 +20,25 @@ The following UI elements in `src/mainwindow.ui` should be renamed:
    - `pushButtonNewCypherBook` → `pushButtonNewCodeBook`
 
 3. **Labels**:
-   - Any labels or other UI elements referring to "Cypher Book" should be updated to "Code Book"
+   - Any labels referring to "Cypher Book" should be updated to "Code Book"
 
 4. **Line Edits**:
    - `lineEditCypherBook` → `lineEditCodeBook`
+
+5. **Tab Titles**:
+   - Any tab titles referring to "Cypher Book" should be updated to "Code Book"
+
+6. **Dialog Titles**:
+   - All dialog titles should be updated to use "Codebook" consistently
 
 ## How to Update the UI File
 
 1. Open `src/mainwindow.ui` in Qt Designer
 2. Locate each element in the Object Inspector panel
 3. Right-click on each element and select "Change objectName..." to rename it
-4. Also update any visible text properties (e.g., button text, label text) to reflect the new naming
+4. Also update any visible text properties (e.g., button text, label text)
 5. Save the file and rebuild the project
 
-## Compatibility Notes
+## Implementation Note
 
-Until the UI file is updated, the C++ code will continue to work with the existing UI elements. The code has been written to handle both naming conventions with appropriate comments to indicate where UI elements still use the old naming.
-
-## Future Considerations
-
-After updating the UI elements, it would be good practice to:
-
-1. Check for any references to "CypherBook" in documentation
-2. Update user guides or help text
-3. Consider renaming file extensions in existing files from `.cypherbook` to `.codebook`
-
-For now, the application supports both file extensions for backward compatibility.
+Until the UI elements are renamed, the C++ code contains the necessary connections to work with the current UI element names, with comments indicating where names need to be updated.
