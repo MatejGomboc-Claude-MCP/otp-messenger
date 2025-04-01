@@ -7,9 +7,6 @@
 #include <QVector>
 #include "codebook.h"
 
-// Forward declaration for backward compatibility
-class CypherBook;
-
 class CryptoEngine : public QObject
 {
     Q_OBJECT
@@ -19,9 +16,6 @@ public:
     
     // Set the codebook to use for encryption/decryption
     bool setCodeBook(CodeBook *book);
-    
-    // Backward compatibility method for CypherBook -> CodeBook transition
-    bool setCypherBook(CodeBook *book);
     
     // Encrypt a message using OTP
     QByteArray encrypt(const QByteArray &plaintext, quint64 &keyOffset);
