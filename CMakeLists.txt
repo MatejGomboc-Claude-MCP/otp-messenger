@@ -19,7 +19,7 @@ set(SOURCES
     src/main.cpp
     src/mainwindow.cpp
     src/cryptoengine.cpp
-    src/cypherbook.cpp
+    src/codebook.cpp
     src/authentication.cpp
     src/messageprotocol.cpp
 )
@@ -28,7 +28,7 @@ set(SOURCES
 set(HEADERS
     src/mainwindow.h
     src/cryptoengine.h
-    src/cypherbook.h
+    src/codebook.h
     src/authentication.h
     src/messageprotocol.h
 )
@@ -72,7 +72,7 @@ if(APPLE)
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/MacOSXBundleInfo.plist.in
     )
-endif()
+endif(APPLE)
 
 # For Windows RC file (icon, etc.)
 if(WIN32)
