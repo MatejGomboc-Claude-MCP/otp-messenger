@@ -54,6 +54,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionNew_Cypher_Book_triggered()
 {
+    // Note: Action name still uses old naming convention, but functionality is for CodeBook
+    
     // Check if we need to save any changes
     if (!maybeSave()) {
         return;
@@ -62,10 +64,16 @@ void MainWindow::on_actionNew_Cypher_Book_triggered()
     // Ask for file location
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Create New Codebook"), QString(),
-        tr("Codebooks (*.codebook);;All Files (*)"));
+        tr("Codebooks (*.codebook);;Legacy Format (*.cypherbook);;All Files (*)"));
     
     if (fileName.isEmpty()) {
         return;
+    }
+    
+    // Ensure the file has the correct extension
+    if (!fileName.endsWith(".codebook", Qt::CaseInsensitive) && 
+        !fileName.endsWith(".cypherbook", Qt::CaseInsensitive)) {
+        fileName.append(".codebook");
     }
     
     // Ask for size
@@ -99,15 +107,17 @@ void MainWindow::on_actionNew_Cypher_Book_triggered()
 
 void MainWindow::on_actionOpen_Cypher_Book_triggered()
 {
+    // Note: Action name still uses old naming convention, but functionality is for CodeBook
+    
     // Check if we need to save any changes
     if (!maybeSave()) {
         return;
     }
     
-    // Ask for file location
+    // Ask for file location - support both new and legacy extensions
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Open Codebook"), QString(),
-        tr("Codebooks (*.codebook);;All Files (*)"));
+        tr("All Codebooks (*.codebook *.cypherbook);;Codebooks (*.codebook);;Legacy Format (*.cypherbook);;All Files (*)"));
     
     if (fileName.isEmpty()) {
         return;
@@ -129,6 +139,8 @@ void MainWindow::on_actionOpen_Cypher_Book_triggered()
 
 void MainWindow::on_actionSave_Cypher_Book_triggered()
 {
+    // Note: Action name still uses old naming convention, but functionality is for CodeBook
+    
     // Save the codebook
     if (!codeBook || !codeBook->isOpen()) {
         QMessageBox::warning(this, tr("Warning"),
@@ -210,11 +222,13 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_pushButtonOpenCypherBook_clicked()
 {
+    // Note: Button name still uses old naming convention, but functionality is for CodeBook
     on_actionOpen_Cypher_Book_triggered();
 }
 
 void MainWindow::on_pushButtonNewCypherBook_clicked()
 {
+    // Note: Button name still uses old naming convention, but functionality is for CodeBook
     on_actionNew_Cypher_Book_triggered();
 }
 
