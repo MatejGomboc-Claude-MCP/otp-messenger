@@ -54,6 +54,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionNew_Cypher_Book_triggered()
 {
+    // Note: Action name in UI still needs to be updated
+    
     // Check if we need to save any changes
     if (!maybeSave()) {
         return;
@@ -66,6 +68,11 @@ void MainWindow::on_actionNew_Cypher_Book_triggered()
     
     if (fileName.isEmpty()) {
         return;
+    }
+    
+    // Ensure the file has the correct extension
+    if (!fileName.endsWith(".codebook", Qt::CaseInsensitive)) {
+        fileName.append(".codebook");
     }
     
     // Ask for size
@@ -99,6 +106,8 @@ void MainWindow::on_actionNew_Cypher_Book_triggered()
 
 void MainWindow::on_actionOpen_Cypher_Book_triggered()
 {
+    // Note: Action name in UI still needs to be updated
+    
     // Check if we need to save any changes
     if (!maybeSave()) {
         return;
@@ -210,11 +219,13 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_pushButtonOpenCypherBook_clicked()
 {
+    // Note: Button name in UI still needs to be updated
     on_actionOpen_Cypher_Book_triggered();
 }
 
 void MainWindow::on_pushButtonNewCypherBook_clicked()
 {
+    // Note: Button name in UI still needs to be updated
     on_actionNew_Cypher_Book_triggered();
 }
 
