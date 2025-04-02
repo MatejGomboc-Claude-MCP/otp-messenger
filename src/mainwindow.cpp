@@ -138,8 +138,6 @@ void MainWindow::on_actionOpen_Cypher_Book_triggered()
 
 void MainWindow::on_actionSave_Cypher_Book_triggered()
 {
-    // Note: Action name in UI still needs to be updated
-    
     // Save the codebook
     if (!codeBook || !codeBook->isOpen()) {
         QMessageBox::warning(this, tr("Warning"),
