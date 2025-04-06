@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <filesystem>
-#include <memory>
 #include "secure_memory.h"
 #include "pad_file_manager.h"
 #include "message_protocol.h"
@@ -9,181 +8,111 @@
 
 using namespace otp;
 
-// Simple demonstration of the pad-based architecture
-int main() {
+// Demo application to showcase the pad-based architecture
+int main(int argc, char* argv[]) {
+    std::cout << "OTP Messenger Pad Demo" << std::endl;
+    std::cout << "======================" << std::endl << std::endl;
+    
     try {
-        // Create a temporary directory for the demo
+        // Create a temporary directory for our test vault
         std::filesystem::path tempDir = std::filesystem::temp_directory_path() / "otp_demo";
         std::filesystem::create_directories(tempDir);
+        std::cout << "Created temp directory: " << tempDir.string() << std::endl;
         
-        std::cout << "OTP Messenger Pad-Based Architecture Demo" << std::endl;
-        std::cout << "==========================================" << std::endl;
-        std::cout << "Using temporary directory: " << tempDir.string() << std::endl << std::endl;
+        // Initialize pad vault
+        PadVaultManager padVault;
+        std::string masterPassword = "demo-password-123";
         
-        // Create a PadVaultManager for Alice
-        PadVaultManager aliceVault;
-        
-        // Initialize Alice's vault
-        std::cout << "Initializing Alice's pad vault..." << std::endl;
-        if (!aliceVault.initialize(tempDir / "alice_vault", "alice_password")) {
-            throw std::runtime_error("Failed to initialize Alice's pad vault");
+        std::cout << "Initializing pad vault..." << std::endl;
+        if (!padVault.initialize(tempDir, masterPassword)) {
+            throw std::runtime_error("Failed to initialize pad vault");
         }
         
-        // Create some pads for Alice
-        std::cout << "Creating pads for Alice..." << std::endl;
-        if (!aliceVault.createPads(1024 * 1024, 3, "alice_password")) { // 1MB pads
-            throw std::runtime_error("Failed to create pads for Alice");
+        // Create some pads
+        const size_t padSize = 1024 * 1024; // 1MB pads
+        const int padCount = 3;
+        
+        std::cout << "Creating " << padCount << " pads of " << (padSize / 1024) << "KB each..." << std::endl;
+        if (!padVault.createPads(padSize, padCount, masterPassword)) {
+            throw std::runtime_error("Failed to create pads");
         }
         
-        // Create a PadVaultManager for Bob
-        PadVaultManager bobVault;
+        // Show available pads
+        std::cout << "Available pads: " << padVault.getAvailablePadCount() << std::endl;
+        std::cout << "Total available key material: " << padVault.getTotalAvailableKeyMaterial() << " bytes" << std::endl;
         
-        // Initialize Bob's vault
-        std::cout << "Initializing Bob's pad vault..." << std::endl;
-        if (!bobVault.initialize(tempDir / "bob_vault", "bob_password")) {
-            throw std::runtime_error("Failed to initialize Bob's pad vault");
-        }
+        // Create a message protocol
+        MessageProtocol msgProtocol;
         
-        // In a real application, Alice and Bob would exchange pad files securely
-        // For this demo, we'll create identical pads for both
+        // Create a test message
+        std::string message = "This is a test message using the pad-based OTP architecture with MAC authentication!";
+        std::cout << "\nOriginal message: " << message << std::endl;
         
-        // Create some pads for Bob (identical to Alice's)
-        std::cout << "Creating pads for Bob..." << std::endl;
-        if (!bobVault.createPads(1024 * 1024, 3, "bob_password")) { // 1MB pads
-            throw std::runtime_error("Failed to create pads for Bob");
-        }
+        // Encrypt the message
+        SecureBuffer encryptedMsg = msgProtocol.createTextMessage(message, padVault);
+        std::cout << "Encrypted message size: " << encryptedMsg.size() << " bytes" << std::endl;
         
-        // Create message protocols
-        MessageProtocol aliceProtocol;
-        MessageProtocol bobProtocol;
+        // Show which pad was used
+        uint64_t padId = msgProtocol.getMessagePadId(encryptedMsg);
+        std::cout << "Used pad ID: 0x" << std::hex << padId << std::dec << std::endl;
         
-        // Alice creates a message for Bob
-        std::string aliceMessage = "Hello Bob, this is a secret message from Alice!";
-        std::cout << "\nAlice writes message: \"" << aliceMessage << "\"" << std::endl;
-        
-        SecureBuffer encryptedMessage = aliceProtocol.createTextMessage(aliceMessage, aliceVault);
-        
-        std::cout << "Message encrypted using pad ID: " 
-                  << aliceProtocol.getMessagePadId(encryptedMessage) << std::endl;
-        
-        std::cout << "Message size: " << encryptedMessage.size() << " bytes" << std::endl;
-        
-        // Bob receives and decrypts the message
-        std::cout << "\nBob receives the encrypted message..." << std::endl;
-        
-        MessageProtocol::MessageType messageType;
+        // Decrypt the message
+        MessageProtocol::MessageType type;
         SecureBuffer decryptedPayload;
         
-        if (bobProtocol.parseMessage(encryptedMessage, bobVault, messageType, decryptedPayload)) {
-            std::string decryptedText = bobProtocol.extractText(decryptedPayload);
-            
-            std::cout << "Message type: ";
-            switch (messageType) {
-                case MessageProtocol::MessageType::Text:
-                    std::cout << "Text Message";
-                    break;
-                case MessageProtocol::MessageType::Challenge:
-                    std::cout << "Challenge";
-                    break;
-                case MessageProtocol::MessageType::Response:
-                    std::cout << "Response";
-                    break;
-                case MessageProtocol::MessageType::Duress:
-                    std::cout << "Duress";
-                    break;
-                default:
-                    std::cout << "Other";
-                    break;
-            }
-            std::cout << std::endl;
-            
-            std::cout << "Decrypted message: \"" << decryptedText << "\"" << std::endl;
+        std::cout << "\nDecrypting message..." << std::endl;
+        if (msgProtocol.parseMessage(encryptedMsg, padVault, type, decryptedPayload)) {
+            std::string decryptedText = msgProtocol.extractText(decryptedPayload);
+            std::cout << "Decrypted message: " << decryptedText << std::endl;
+            std::cout << "Message type: " << static_cast<int>(type) << std::endl;
         } else {
             std::cout << "Failed to decrypt message!" << std::endl;
         }
         
-        // Demonstrate challenge-response mechanism
+        // Create and verify a challenge-response exchange
         std::cout << "\nDemonstrating challenge-response mechanism..." << std::endl;
+        std::string challenge = "What is the password?";
+        SecureBuffer challengeMsg = msgProtocol.createChallengeMessage(challenge, padVault);
         
-        // Alice creates a challenge for Bob
-        std::string challenge = "What is the name of our project?";
-        std::cout << "Alice creates challenge: \"" << challenge << "\"" << std::endl;
+        std::cout << "Challenge sent: " << challenge << std::endl;
         
-        SecureBuffer challengeMessage = aliceProtocol.createChallengeMessage(challenge, aliceVault);
+        // Verify challenge message
+        MessageProtocol::MessageType challengeType;
+        SecureBuffer challengePayload;
         
-        // Bob receives and decrypts the challenge
-        if (bobProtocol.parseMessage(challengeMessage, bobVault, messageType, decryptedPayload)) {
-            std::string challengeText = bobProtocol.extractText(decryptedPayload);
-            std::cout << "Bob receives challenge: \"" << challengeText << "\"" << std::endl;
+        if (msgProtocol.parseMessage(challengeMsg, padVault, challengeType, challengePayload)) {
+            std::string receivedChallenge = msgProtocol.extractText(challengePayload);
+            std::cout << "Challenge received: " << receivedChallenge << std::endl;
             
-            // Bob creates a response
-            std::string response = "OTP Messenger";
-            std::cout << "Bob responds with: \"" << response << "\"" << std::endl;
+            // Create response
+            std::string response = "The password is secret!";
+            SecureBuffer responseMsg = msgProtocol.createChallengeResponse(challengeMsg, response, padVault);
             
-            SecureBuffer responseMessage = bobProtocol.createChallengeResponse(challengeMessage, response, bobVault);
+            // Verify response
+            MessageProtocol::MessageType responseType;
+            SecureBuffer responsePayload;
             
-            // Alice receives and verifies the response
-            if (aliceProtocol.parseMessage(responseMessage, aliceVault, messageType, decryptedPayload)) {
-                std::string responseText = aliceProtocol.extractText(decryptedPayload);
-                std::cout << "Alice receives response: \"" << responseText << "\"" << std::endl;
-                
-                if (responseText == "OTP Messenger") {
-                    std::cout << "Challenge-response verification successful!" << std::endl;
-                } else {
-                    std::cout << "Challenge-response verification failed!" << std::endl;
-                }
+            if (msgProtocol.parseMessage(responseMsg, padVault, responseType, responsePayload)) {
+                std::string receivedResponse = msgProtocol.extractText(responsePayload);
+                std::cout << "Response received: " << receivedResponse << std::endl;
             }
         }
-        
-        // Demonstrate duress message
-        std::cout << "\nDemonstrating duress message..." << std::endl;
-        
-        // Bob is under duress and sends a covert signal to Alice
-        std::string duressMessage = "Everything is fine, let's meet tomorrow as planned.";
-        std::cout << "Bob is under duress but sends innocent-looking message: \"" 
-                  << duressMessage << "\"" << std::endl;
-        
-        SecureBuffer encryptedDuressMessage = bobProtocol.createDuressMessage(duressMessage, bobVault);
-        
-        // Alice receives and detects duress
-        if (aliceProtocol.parseMessage(encryptedDuressMessage, aliceVault, messageType, decryptedPayload)) {
-            std::string receivedText = aliceProtocol.extractText(decryptedPayload);
-            std::cout << "Alice receives message: \"" << receivedText << "\"" << std::endl;
-            
-            if (messageType == MessageProtocol::MessageType::Duress) {
-                std::cout << "Alice detects that Bob is under duress!" << std::endl;
-            } else {
-                std::cout << "Alice does not detect duress signal." << std::endl;
-            }
-        }
-        
-        // Demonstrate pad usage and depletion
-        std::cout << "\nDemonstrating pad usage tracking..." << std::endl;
-        
-        // Get initial available key material
-        uint64_t initialKeyMaterial = aliceVault.getTotalAvailableKeyMaterial();
-        std::cout << "Initial available key material: " << initialKeyMaterial << " bytes" << std::endl;
-        
-        // Create a large message that uses significant key material
-        std::string largeMessage(10000, 'X'); // 10KB message
-        SecureBuffer encryptedLargeMessage = aliceProtocol.createTextMessage(largeMessage, aliceVault);
         
         // Check remaining key material
-        uint64_t remainingKeyMaterial = aliceVault.getTotalAvailableKeyMaterial();
-        std::cout << "Remaining available key material: " << remainingKeyMaterial << " bytes" << std::endl;
-        std::cout << "Used " << (initialKeyMaterial - remainingKeyMaterial) << " bytes of key material" << std::endl;
+        std::cout << "\nRemaining key material after operations: " << padVault.getTotalAvailableKeyMaterial() 
+                 << " bytes (" << (padVault.getTotalAvailableKeyMaterial() * 100.0 / (padSize * padCount)) << "%)" << std::endl;
         
         // Clean up
         std::cout << "\nCleaning up..." << std::endl;
-        aliceVault.closeAllPads();
-        bobVault.closeAllPads();
+        padVault.closeAllPads();
         
-        // Remove the temporary directory and files
+        // Securely delete the test directory
         std::filesystem::remove_all(tempDir);
         
-        std::cout << "\nDemo completed successfully!" << std::endl;
+        std::cout << "Demo completed successfully!" << std::endl;
         return 0;
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
     }
