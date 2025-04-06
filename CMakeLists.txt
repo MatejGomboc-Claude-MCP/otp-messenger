@@ -53,7 +53,7 @@ set(RESOURCE_FILES
     resources/resources.qrc
 )
 
-# Combine all sources
+# Combine all sources for main application
 set(ALL_SOURCES
     ${CORE_SOURCES}
     ${CORE_HEADERS}
@@ -63,12 +63,19 @@ set(ALL_SOURCES
     ${RESOURCE_FILES}
 )
 
-# Create executable
+# Create main executable
 add_executable(OTPMessenger
     ${ALL_SOURCES}
 )
 
-# Link Qt libraries
+# Create demo executable
+add_executable(OTPPadDemo
+    src/pad_demo.cpp
+    ${CORE_SOURCES}
+    ${CORE_HEADERS}
+)
+
+# Link Qt libraries to main app
 target_link_libraries(OTPMessenger PRIVATE
     Qt6::Core
     Qt6::Gui
@@ -76,16 +83,26 @@ target_link_libraries(OTPMessenger PRIVATE
     Qt6::Network
 )
 
-# Link Windows-specific libraries
+# Link libraries to demo app
+target_link_libraries(OTPPadDemo PRIVATE
+    Qt6::Core
+)
+
+# Link Windows-specific libraries to both executables
 if(WIN32)
     target_link_libraries(OTPMessenger PRIVATE
+        bcrypt.lib    # For cryptography
+        advapi32.lib  # For Windows security APIs
+    )
+    
+    target_link_libraries(OTPPadDemo PRIVATE
         bcrypt.lib    # For cryptography
         advapi32.lib  # For Windows security APIs
     )
 endif(WIN32)
 
 # Installation
-install(TARGETS OTPMessenger
+install(TARGETS OTPMessenger OTPPadDemo
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
