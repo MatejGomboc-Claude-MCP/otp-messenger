@@ -1,6 +1,6 @@
-# OTP Messenger Developer Guide
+# OTP Messenger Developer Guide (Pad-Based Architecture)
 
-This document provides implementation details and notes for developers who want to understand, modify, or extend the OTP Messenger application.
+This document provides implementation details and notes for developers who want to understand, modify, or extend the OTP Messenger application that uses the new pad-based architecture.
 
 ## Architecture Overview
 
@@ -11,10 +11,11 @@ OTPMessenger
 ├── src/
 │   ├── main.cpp                  # Application entry point
 │   ├── mainwindow.h/cpp          # Main UI
-│   ├── codebook.h/cpp            # Key material management
-│   ├── cryptoengine.h/cpp        # Encryption/decryption
-│   ├── authentication.h/cpp      # Multi-factor authentication
-│   └── messageprotocol.h/cpp     # Message formatting & verification
+│   ├── pad_file_manager.h/cpp    # Pad-based key material management
+│   ├── message_protocol.h/cpp    # Message formatting & verification
+│   ├── secure_memory.h/cpp       # Secure memory management
+│   ├── secure_wiper.h/cpp        # Secure data deletion
+│   └── authentication.h/cpp      # Multi-factor authentication
 ├── resources/                    # Icons, styles, etc.
 └── docs/                         # Documentation
 ```
@@ -26,28 +27,35 @@ OTPMessenger
    - Coordinates between backend components
    - Provides visual feedback
 
-2. **CodeBook**: Manages storage and access to key material
-   - Handles file I/O for codebook files
+2. **PadFileManager**: Manages individual pad files
+   - Handles file I/O for encrypted pad files
    - Tracks used/unused key material
-   - Implements compartmentalization
-   - Provides emergency protocols
+   - Provides secure wiping of used material
 
-3. **CryptoEngine**: Performs cryptographic operations
-   - Implements OTP encryption/decryption
-   - Manages message authentication codes
-   - Ensures message integrity
+3. **PadVaultManager**: Manages a collection of pads
+   - Tracks available pads and their usage
+   - Handles metadata for all pads
+   - Provides pad selection for messages
 
-4. **MessageProtocol**: Formats and parses messages
-   - Defines message structure
-   - Handles challenge-response protocols
-   - Implements duress indicators
-   - Manages code phrases
+4. **MessageProtocol**: Handles message formatting and verification
+   - Implements OTP encryption/decryption with MACs
+   - Defines message format with header and integrity checking
+   - Handles challenge-response and duress protocols
 
-5. **Authentication**: Handles user identity verification
+5. **SecureMemory**: Protects sensitive data in memory
+   - Prevents key material from being paged to disk
+   - Provides secure memory allocation and deallocation
+   - Implements secure wiping of memory
+
+6. **SecureWiper**: Implements secure data deletion
+   - Different strategies for SSDs vs HDDs
+   - Multi-pass overwriting for secure deletion
+   - File metadata destruction
+
+7. **Authentication**: Handles user identity verification
    - Implements multi-factor authentication
    - Manages password hashing
-   - Handles TOTP generation/verification
-   - Integrates with biometric systems
+   - Handles TOTP and biometric integration
 
 ## Class Interactions
 
@@ -59,67 +67,66 @@ The components interact in the following way:
    - Calls appropriate methods on the backend components
    - Displays results and feedback
 
-2. **CodeBook & CryptoEngine**
-   - `CryptoEngine` holds a reference to `CodeBook` to get key material
-   - When encrypting/decrypting, `CryptoEngine` requests key material from `CodeBook`
-   - After using key material, `CryptoEngine` tells `CodeBook` to mark it as used
+2. **PadVaultManager & MessageProtocol**
+   - `MessageProtocol` requests key material from `PadVaultManager`
+   - `PadVaultManager` selects appropriate pads and manages their lifecycle
+   - After using key material, `MessageProtocol` tells `PadVaultManager` to mark it as used
 
-3. **MessageProtocol & CryptoEngine**
-   - `MessageProtocol` holds a reference to `CryptoEngine`
-   - When creating messages, `MessageProtocol` uses `CryptoEngine` to encrypt data
-   - When parsing messages, `MessageProtocol` uses `CryptoEngine` to decrypt data
+3. **PadVaultManager & PadFileManager**
+   - `PadVaultManager` creates and manages multiple `PadFileManager` instances
+   - Each `PadFileManager` is responsible for a single pad file
+   - `PadVaultManager` tracks pad usage and metadata
 
-4. **Authentication & MainWindow**
+4. **SecureMemory & All Components**
+   - All components use `SecureMemory` for handling sensitive data
+   - Provides protection against data leakage through memory paging
+
+5. **Authentication & MainWindow**
    - `MainWindow` holds a reference to `Authentication`
    - When user needs to authenticate, `MainWindow` calls methods on `Authentication`
    - `Authentication` signals success/failure back to `MainWindow`
 
-## One-Time Pad Implementation
+## Pad-Based Architecture Implementation
+
+### Pad File Format
+
+Each pad file has the following structure:
+
+1. **Header** (fixed size)
+   - Magic identifier ("OTPPAD01")
+   - Format version
+   - Pad ID (unique identifier)
+   - Total size of key material
+   - Current position (used/unused boundary)
+   - Initialization Vector for encryption
+   - Authentication tag
+   - Reserved space
+
+2. **Key Material** (variable size)
+   - Encrypted random bytes used for OTP encryption
 
 ### Encryption Process
 
 1. Get a message to encrypt
-2. Get a portion of random key material from the codebook
-3. Perform XOR operation between the message and key material
-4. Mark that portion of the key material as used
-5. Include metadata with the encrypted message (key offset, length, etc.)
-6. Generate a MAC (Message Authentication Code) for integrity
-7. Return the complete encrypted message
+2. Determine required key material size (message size + MAC size)
+3. Find a pad with sufficient unused space
+4. Get key material from the pad
+5. Split key material into encryption key and MAC key
+6. Perform XOR operation between the message and encryption key
+7. Create message header with metadata
+8. Generate MAC for the message header + encrypted payload
+9. Mark key material as used
+10. Return the complete encrypted message (header + encrypted payload + MAC)
 
 ### Decryption Process
 
-1. Parse the encrypted message to extract metadata
-2. Find the appropriate key material in the codebook using the key offset
-3. Verify the MAC to ensure message integrity
-4. Perform XOR operation between the encrypted data and key material
-5. Return the decrypted message
-
-## Codebook Format
-
-The codebook is a binary file with the following structure:
-
-1. **Header** (fixed size)
-   - Format version
-   - Total size of key material
-   - Current position (used/unused boundary)
-   - Creation timestamp
-   - Header checksum
-   - Compartment count
-   - Authentication section information
-   - Emergency code information
-   - Reserved space for future use
-
-2. **Compartment Information** (variable size)
-   - Array of compartment structures, each containing:
-     - Offset in the file
-     - Size of compartment
-     - Current position within compartment
-     - Checksum
-     - Lock status
-     - Name
-
-3. **Key Material** (variable size)
-   - Random bytes used for encryption
+1. Parse the encrypted message to extract header, payload, and MAC
+2. Verify the header format and integrity
+3. Get key material from the specified pad
+4. Split key material into encryption key and MAC key
+5. Verify the MAC to ensure message integrity
+6. Perform XOR operation between the encrypted payload and encryption key
+7. Return the decrypted message
 
 ## Message Format
 
@@ -127,173 +134,92 @@ Messages are structured as follows:
 
 1. **Header**
    - Magic identifier ("OTP1")
-   - Key offset (position in codebook)
-   - Key length used
-   - Timestamp
-
-2. **Encrypted Content**
+   - Version number (1)
    - Message type
+   - Pad ID
+   - Key offset in pad
+   - Message length
+   - Timestamp
    - Sequence number
-   - Message timestamp
-   - Message payload
+   - Reserved bytes
+
+2. **Encrypted Payload**
+   - Variable length encrypted data
 
 3. **MAC**
-   - Message Authentication Code for integrity
-
-## Authentication Implementation
-
-### Password Authentication
-
-1. When setting a password:
-   - Generate a random salt
-   - Hash the password with the salt using a strong algorithm (SHA-256)
-   - Store the salt and hash
-
-2. When verifying a password:
-   - Hash the provided password with the stored salt
-   - Compare with the stored hash
-
-### TOTP Implementation
-
-1. When setting up TOTP:
-   - Generate a random secret
-   - Encode it in base32 for compatibility with standard authenticator apps
-   - Store the secret
-
-2. When verifying a TOTP code:
-   - Calculate the current time step (floor(current_time / period))
-   - Generate the expected TOTP code using the secret and time step
-   - Compare with the provided code
-   - Allow for time skew by checking adjacent time steps
-
-### Biometric Authentication
-
-The biometric authentication is platform-dependent:
-- On macOS, it uses Touch ID/Face ID
-- On Windows, it uses Windows Hello
-- On Android/iOS, it uses the built-in biometric APIs
+   - Message Authentication Code (HMAC-SHA256)
 
 ## Security Features
 
-### Compartmentalization
+### Secure Memory Management
 
-Inspired by mission-specific sections in codebooks:
-- Each compartment is a separate section of key material
-- Compartments can be locked/unlocked independently
-- Compartments can have different purposes (regular messages, authentication, etc.)
+1. **Memory Locking**
+   - Uses `VirtualLock` to prevent memory from being paged to disk
+   - Acquires necessary privileges to lock memory pages
+   - Tracks locked memory regions for proper cleanup
 
-### Emergency Protocols
+2. **Secure Zeroing**
+   - Multiple overwrite passes to prevent data recovery
+   - Uses volatile pointers to prevent compiler optimization
+   - Memory barriers to ensure completion of writes
 
-Inspired by emergency procedures:
-- Emergency destruction wipes key material securely
-- Multi-pass secure deletion
-- Emergency codes trigger automatic destruction
+### Secure Wiping
 
-### Duress Indicators
+1. **Storage Type Detection**
+   - Detects if storage is SSD or HDD
+   - Uses different strategies based on storage type
 
-- Hidden markers in messages indicate duress
-- Text appears normal but contains subtle patterns
-- Can be detected by the recipient
+2. **HDD Wiping**
+   - Multi-pass overwriting with different patterns
+   - Zero pass, one pass, random pass, final zero pass
+   - Direct writes with flushing to ensure data reaches disk
 
-### Challenge-Response
+3. **SSD Handling**
+   - Relies on TRIM and garbage collection for secure deletion
+   - Avoids excessive writes that could damage the SSD
 
-- Predefined challenges with expected responses
-- Used to verify identity
-- Time-limited to prevent replay attacks
+4. **Metadata Destruction**
+   - Renames files multiple times to obscure file system entries
+   - Resets file timestamps to default values
+   - Changes file permissions
 
-### Code Phrases
+### MAC Generation
 
-- Predefined phrases with specific meanings
-- Used for quick, secure signaling
-- Meaning only known to authorized parties
+1. **Data Authentication**
+   - Combines message header and encrypted payload
+   - Uses HMAC-SHA256 with a unique key for each message
+   - Protects against message tampering and replay attacks
 
-## Security Considerations
+2. **Constant-Time Verification**
+   - Uses time-invariant comparison to prevent timing attacks
+   - Compares all bytes regardless of first mismatch
 
-### Key Material Generation
+## Contributing Guidelines
 
-True randomness is critical for OTP security:
-- Ideally use hardware random number generators
-- Combine multiple entropy sources when possible
-- Never use standard pseudo-random number generators
+When contributing to the pad-based architecture:
 
-### Secure Storage
+1. **Memory Management**
+   - Always use `SecureBuffer` for sensitive data
+   - Avoid copying sensitive data unnecessarily
+   - Be mindful of object lifetimes and cleanup
 
-Key material must be protected:
-- Codebook files should be encrypted at rest
-- Consider OS-level encryption
-- Use secure deletion when removing key material
+2. **Error Handling**
+   - Use exceptions for serious errors
+   - Return false/empty for recoverable errors
+   - Provide meaningful error messages
 
-### Synchronization
+3. **Thread Safety**
+   - Use appropriate synchronization for shared resources
+   - PadVaultManager and PadFileManager methods should be thread-safe
 
-Both parties must use the same key material:
-- Include synchronization metadata in messages
-- Track key material usage meticulously
-- Provide clear indicators of position
+4. **Security Best Practices**
+   - Never reuse key material
+   - Always verify message integrity
+   - Secure all sensitive data in memory and on disk
 
-### Never Reuse Key Material
+5. **Testing**
+   - Write tests for all security-critical components
+   - Test both positive and negative cases
+   - Verify secure deletion on different storage types
 
-The cardinal rule of OTP:
-- Mark key material as used immediately
-- Maintain strict tracking of used/unused boundaries
-- Provide warnings when key material is running low
-
-## Future Enhancements
-
-### Network Transport
-
-While the current implementation assumes manual exchange of messages, a network transport layer could be added:
-- End-to-end encrypted connections
-- P2P communication
-- Ephemeral messaging
-
-### Hardware Key Generation
-
-Improve randomness with dedicated hardware:
-- Hardware random number generator integration
-- Quantum random number generation services
-- Special-purpose random generation devices
-
-### Group Messaging
-
-Extend to support secure group communications:
-- Shared group codebooks
-- Multiple recipient management
-- Key distribution protocols
-
-### Advanced Authentication
-
-Enhance the authentication system:
-- Smart card integration
-- Certificate-based authentication
-- Integration with standard identity providers
-
-## Debugging Tips
-
-### Codebook Issues
-
-If you're having problems with codebook files:
-- Check file permissions
-- Verify header integrity
-- Use the key material visualizer to inspect usage
-
-### Encryption/Decryption Failures
-
-When messages won't encrypt or decrypt:
-- Verify both parties have identical codebooks
-- Check if key material has been exhausted
-- Ensure proper key offsets are being used
-
-### Authentication Problems
-
-For authentication troubleshooting:
-- Reset password if necessary
-- Regenerate TOTP secrets
-- Check platform-specific biometric setup
-
-## Contributing
-
-When contributing to OTP Messenger:
-1. Follow the existing code style and architecture
-2. Add comprehensive documentation for new features
-3. Preserve the core OTP security principles
-4. Respect the historical inspirations that make this project unique
+By following these guidelines, you can help maintain and improve the security of the OTP Messenger application.
