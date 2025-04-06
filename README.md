@@ -1,6 +1,6 @@
 # OTP Messenger
 
-A hobby Qt6 C++ encrypted messenger application using One-Time Pad (OTP) encryption.
+A hobby Qt6 C++ encrypted messenger application using One-Time Pad (OTP) encryption with a pad-based architecture and Message Authentication Codes (MACs).
 
 ## DISCLAIMER
 
@@ -17,13 +17,16 @@ This project is not intended for production use or in environments requiring hig
 
 ## Project Overview
 
-OTP Messenger implements a theoretically unbreakable encrypted messaging system using the One-Time Pad encryption method. Keys are stored in large binary files ("codebooks") that are manually exchanged between parties through offline means (e.g., USB sticks).
+OTP Messenger implements a theoretically unbreakable encrypted messaging system using the One-Time Pad encryption method. Keys are stored in individual encrypted pad files that are manually exchanged between parties through offline means (e.g., USB sticks). Each message includes a Message Authentication Code (MAC) to ensure integrity.
 
 ### Key Features
 
 - True One-Time Pad encryption implementation
+- Encrypted pad files for key material storage
+- Message Authentication Codes (MACs) for integrity verification
+- Secure memory management for sensitive data
+- Secure wiping of used key material
 - Qt6-based cross-platform GUI
-- Secure codebook management
 - Multi-factor authentication options
 - Biometric authentication support
 - Historically inspired verification protocols
@@ -44,9 +47,9 @@ The One-Time Pad encryption method has roots going back to the 19th century:
 
 Various organizations used One-Time Pad encryption for secure communications:
 
-- **Physical Codebooks**: Agents were issued small, printed booklets with pages of random numbers. Our digital "codebooks" are modeled on these physical artifacts.
+- **Physical Pads**: Agents were issued small, printed booklets with pages of random numbers. Our digital "pads" are modeled on these physical artifacts.
 
-- **Usage Tracking**: Users would physically mark off portions of the codebook after use to prevent reuse. Our software implements this through digital tracking of key material.
+- **Usage Tracking**: Users would physically mark off portions of the pad after use to prevent reuse. Our software implements this through digital tracking of key material.
 
 - **VENONA Project**: When operators reused portions of their one-time pads during WWII and after, cryptanalysts were able to crack some messages - highlighting the critical importance of never reusing key material.
 
@@ -54,13 +57,13 @@ Various organizations used One-Time Pad encryption for secure communications:
 
 - **Challenge-Response Patterns**: Predetermined challenge and response phrases to verify identities, which we've implemented digitally.
 
-- **Control Words**: Messages contained special "control words" that helped verify authenticity and integrity. Our message protocol includes similar verification mechanisms.
+- **Control Words**: Messages contained special "control words" that helped verify authenticity and integrity. Our message protocol includes similar verification mechanisms through MACs.
 
 ### Destruction Protocols
 
-- Codebooks were designed to be quickly destroyed if compromised, often using special inks that would dissolve when exposed to water.
+- Pads were designed to be quickly destroyed if compromised, often using special inks that would dissolve when exposed to water.
 
-- Our digital implementation includes secure wiping features inspired by these emergency protocols.
+- Our digital implementation includes secure wiping features inspired by these emergency protocols, with different techniques for SSDs vs HDDs.
 
 ## Getting Started
 
@@ -69,6 +72,7 @@ Various organizations used One-Time Pad encryption for secure communications:
 - Qt6 (6.2 or newer recommended)
 - C++17 compatible compiler
 - CMake 3.16 or newer
+- Windows 10 or newer (currently Windows-specific due to security APIs)
 
 ### Building from Source
 
@@ -105,28 +109,40 @@ Detailed documentation is available in the docs directory:
 
 ## Core Components
 
-### CodeBook
+### Secure Memory Management
 
-Manages the key material files with historically-inspired features:
-- Compartmentalization for mission-specific key sections
+Protects sensitive data in memory:
+- Prevention of memory paging to disk
+- Secure allocation and wiping
+- RAII pattern for automatic cleanup
+- Memory barriers to prevent compiler optimization
+
+### Pad File Management
+
+Manages individual encrypted pad files:
+- Granular key material management
+- Individual encryption for each pad
+- Secure tracking of used key material
 - Emergency destruction protocols
-- Authentication sections
-- Duress codes
+- Compartmentalization for mission-specific sections
 
-### CryptoEngine
+### Message Protocol with MACs
 
-Handles the OTP encryption/decryption operations:
-- XOR-based encryption (true OTP)
+Implements secure message format and verification:
 - Message Authentication Codes (MACs) for integrity
-- Anti-replay protections
-
-### MessageProtocol
-
-Implements message formatting and verification techniques:
+- Sequence numbers for anti-replay protection
 - Challenge-response protocols
 - Code phrase verification
 - Hidden duress indicators
 - Key synchronization messaging
+
+### Secure Wiping
+
+Implements storage-aware secure wiping:
+- Different techniques for SSDs vs HDDs
+- Multi-pass overwriting for HDDs
+- Metadata destruction
+- File system artifact removal
 
 ### Authentication
 
@@ -139,26 +155,28 @@ Multi-factor authentication system:
 
 ## Development Roadmap
 
-### Core Encryption
-- [x] Implement true random number generation for codebooks
-- [x] Create codebook format and management system
-- [x] Develop key synchronization mechanism
-- [x] Implement message encryption/decryption using OTP
+### Core Encryption and Security
+- [x] Implement true random number generation for pads
+- [x] Create pad-based key material management
+- [x] Implement secure memory management
+- [x] Add Message Authentication Codes (MACs)
+- [x] Implement secure wiping with SSD detection
+- [ ] Add Argon2 password hashing
 
 ### Authentication
 - [x] Implement traditional password authentication
 - [x] Add 2FA support (TOTP)
-- [x] Integrate biometric authentication (fingerprint, facial recognition)
+- [x] Integrate biometric authentication
 - [x] Create tiered security model
 
 ### User Interface
 - [ ] Design main messenger interface
-- [ ] Create codebook management UI
+- [ ] Create pad management UI
 - [ ] Implement security settings and preferences
 - [ ] Add key material status indicators
 
 ### Security Enhancements
-- [x] Implement secure storage for codebooks
+- [x] Implement secure storage for pads
 - [x] Add message integrity verification
 - [x] Develop protection against replay attacks
 - [x] Create secure key depletion tracking
