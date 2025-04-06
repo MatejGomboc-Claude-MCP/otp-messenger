@@ -1,6 +1,6 @@
 # OTP Messenger
 
-A hobby Qt6 C++ encrypted messenger application using One-Time Pad (OTP) encryption with a pad-based architecture and Message Authentication Codes (MACs).
+A cross-platform Qt6 C++ encrypted messenger application using One-Time Pad (OTP) encryption with individual pad files and message authentication.
 
 ## DISCLAIMER
 
@@ -17,53 +17,55 @@ This project is not intended for production use or in environments requiring hig
 
 ## Project Overview
 
-OTP Messenger implements a theoretically unbreakable encrypted messaging system using the One-Time Pad encryption method. Keys are stored in individual encrypted pad files that are manually exchanged between parties through offline means (e.g., USB sticks). Each message includes a Message Authentication Code (MAC) to ensure integrity.
+OTP Messenger implements a theoretically unbreakable encrypted messaging system using the One-Time Pad encryption method. Keys are stored in multiple encrypted pad files (rather than a single large codebook) that are manually exchanged between parties through offline means (e.g., USB sticks).
 
 ### Key Features
 
 - True One-Time Pad encryption implementation
-- Encrypted pad files for key material storage
+- Secure pad management with individual encrypted pad files
 - Message Authentication Codes (MACs) for integrity verification
-- Secure memory management for sensitive data
-- Secure wiping of used key material
 - Qt6-based cross-platform GUI
+- Secure memory handling to prevent sensitive data from being paged to disk
 - Multi-factor authentication options
 - Biometric authentication support
 - Historically inspired verification protocols
+- Secure destruction of used key material
 
-## Historical Context
+## Security Architecture
 
-### Origins of One-Time Pad Encryption
+### Individual Pad Files
 
-The One-Time Pad encryption method has roots going back to the 19th century:
+Instead of using a single large codebook file, OTP Messenger uses multiple smaller pad files:
 
-- **Telegraph Era Origins**: OTP was originally developed in the 19th century to securely transmit sensitive banking and financial information over telegraph lines using Morse code.
+- Each pad is encrypted when not in use
+- Used key material is securely wiped using techniques based on the permadelete project
+- Different strategies are used for SSDs vs. HDDs
+- Pad files include metadata to track usage status
 
-- **Vernam Cipher**: The method was formally patented in 1919 by Gilbert Vernam, an engineer at AT&T Bell Labs, although the core concepts had been in use earlier.
+### Message Authentication Codes (MACs)
 
-- **Mathematical Perfection**: In 1949, Claude Shannon (the father of information theory) mathematically proved that the One-Time Pad is unbreakable when implemented correctly - the only encryption system with this distinction.
+All messages include MACs to ensure:
 
-### Historical Applications
+- Message integrity (detecting modifications)
+- Authentication (verifying sender)
+- Protection against replay attacks
 
-Various organizations used One-Time Pad encryption for secure communications:
+### Memory Protection
 
-- **Physical Pads**: Agents were issued small, printed booklets with pages of random numbers. Our digital "pads" are modeled on these physical artifacts.
+Special care is taken to prevent sensitive data from being paged to disk:
 
-- **Usage Tracking**: Users would physically mark off portions of the pad after use to prevent reuse. Our software implements this through digital tracking of key material.
+- Memory locking using Windows VirtualLock
+- Secure zeroing of memory with compiler optimization prevention
+- Careful buffer management
 
-- **VENONA Project**: When operators reused portions of their one-time pads during WWII and after, cryptanalysts were able to crack some messages - highlighting the critical importance of never reusing key material.
+### Historical Context Influences
 
-### Authentication Techniques
+Several features are inspired by historical cryptographic practices:
 
-- **Challenge-Response Patterns**: Predetermined challenge and response phrases to verify identities, which we've implemented digitally.
-
-- **Control Words**: Messages contained special "control words" that helped verify authenticity and integrity. Our message protocol includes similar verification mechanisms through MACs.
-
-### Destruction Protocols
-
-- Pads were designed to be quickly destroyed if compromised, often using special inks that would dissolve when exposed to water.
-
-- Our digital implementation includes secure wiping features inspired by these emergency protocols, with different techniques for SSDs vs HDDs.
+- **Challenge-Response Protocols**: Verification of the communication partner's identity
+- **Duress Indicators**: Hidden markers to indicate the sender is under duress
+- **Code Phrases**: Predefined phrases with specific meanings
+- **Secure Destruction**: Methods for quickly destroying key material when compromised
 
 ## Getting Started
 
@@ -72,7 +74,7 @@ Various organizations used One-Time Pad encryption for secure communications:
 - Qt6 (6.2 or newer recommended)
 - C++17 compatible compiler
 - CMake 3.16 or newer
-- Windows 10 or newer (currently Windows-specific due to security APIs)
+- Windows OS (currently) due to Windows-specific secure memory handling
 
 ### Building from Source
 
@@ -109,68 +111,52 @@ Detailed documentation is available in the docs directory:
 
 ## Core Components
 
-### Secure Memory Management
-
-Protects sensitive data in memory:
-- Prevention of memory paging to disk
-- Secure allocation and wiping
-- RAII pattern for automatic cleanup
-- Memory barriers to prevent compiler optimization
-
-### Pad File Management
+### PadFileManager
 
 Manages individual encrypted pad files:
-- Granular key material management
-- Individual encryption for each pad
-- Secure tracking of used key material
-- Emergency destruction protocols
-- Compartmentalization for mission-specific sections
+- Generation of secure random key material
+- Tracking used/unused portions
+- Secure wiping of used key material
+- Encrypted storage
 
-### Message Protocol with MACs
+### MessageProtocol
 
-Implements secure message format and verification:
-- Message Authentication Codes (MACs) for integrity
-- Sequence numbers for anti-replay protection
-- Challenge-response protocols
-- Code phrase verification
-- Hidden duress indicators
-- Key synchronization messaging
+Handles message formatting with MACs:
+- Different message types (text, challenge-response, etc.)
+- MAC generation and verification
+- Message encryption/decryption
 
-### Secure Wiping
+### SecureMemory
 
-Implements storage-aware secure wiping:
-- Different techniques for SSDs vs HDDs
-- Multi-pass overwriting for HDDs
-- Metadata destruction
-- File system artifact removal
+Prevents sensitive data from being paged to disk:
+- Memory locking and unlocking
+- Secure wiping of memory
+- Protection against compiler optimization
 
-### Authentication
+### SecureWiper
 
-Multi-factor authentication system:
-- Password-based authentication
-- Time-based One-Time Password (TOTP)
-- Biometric integration
-- Hardware token support
-- Tiered security levels
+Secure deletion based on the permadelete project:
+- Storage-aware wiping (different SSD/HDD approaches)
+- Multi-pass overwriting
+- File metadata destruction
 
 ## Development Roadmap
 
-### Core Encryption and Security
-- [x] Implement true random number generation for pads
-- [x] Create pad-based key material management
-- [x] Implement secure memory management
-- [x] Add Message Authentication Codes (MACs)
-- [x] Implement secure wiping with SSD detection
-- [ ] Add Argon2 password hashing
+### Core Encryption
+- [x] Implement individual pad file management
+- [x] Add Message Authentication Codes
+- [x] Implement secure memory handling
+- [x] Develop storage-aware secure wiping
+- [ ] Add cross-platform support
 
 ### Authentication
-- [x] Implement traditional password authentication
-- [x] Add 2FA support (TOTP)
-- [x] Integrate biometric authentication
-- [x] Create tiered security model
+- [x] Implement basic password authentication
+- [ ] Add 2FA support (TOTP)
+- [ ] Integrate biometric authentication
+- [ ] Create tiered security model
 
 ### User Interface
-- [ ] Design main messenger interface
+- [x] Design main messenger interface
 - [ ] Create pad management UI
 - [ ] Implement security settings and preferences
 - [ ] Add key material status indicators
@@ -180,7 +166,7 @@ Multi-factor authentication system:
 - [x] Add message integrity verification
 - [x] Develop protection against replay attacks
 - [x] Create secure key depletion tracking
-- [x] Implement historically-inspired security features
+- [ ] Implement more historically-inspired security features
 
 ## Contributing
 
