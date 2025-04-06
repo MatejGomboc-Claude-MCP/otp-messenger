@@ -82,7 +82,7 @@ if(WIN32)
         bcrypt.lib    # For cryptography
         advapi32.lib  # For Windows security APIs
     )
-endif()
+endif(WIN32)
 
 # Installation
 install(TARGETS OTPMessenger
