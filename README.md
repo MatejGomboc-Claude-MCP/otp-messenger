@@ -1,6 +1,6 @@
 # OTP Messenger
 
-A cross-platform Qt6 C++ encrypted messenger application using One-Time Pad (OTP) encryption with individual pad files and message authentication.
+A hobby Qt6 C++ encrypted messenger application using One-Time Pad (OTP) encryption with secure pad management and MAC integrity verification.
 
 ## DISCLAIMER
 
@@ -17,55 +17,47 @@ This project is not intended for production use or in environments requiring hig
 
 ## Project Overview
 
-OTP Messenger implements a theoretically unbreakable encrypted messaging system using the One-Time Pad encryption method. Keys are stored in multiple encrypted pad files (rather than a single large codebook) that are manually exchanged between parties through offline means (e.g., USB sticks).
+OTP Messenger implements a theoretically unbreakable encrypted messaging system using the One-Time Pad encryption method with a pad-based architecture. Keys are stored in multiple small encrypted files ("pads") that are managed through a secure vault system and are manually exchanged between parties through offline means (e.g., USB sticks).
 
 ### Key Features
 
 - True One-Time Pad encryption implementation
-- Secure pad management with individual encrypted pad files
+- Pad-based key material management for better compartmentalization
 - Message Authentication Codes (MACs) for integrity verification
-- Qt6-based cross-platform GUI
-- Secure memory handling to prevent sensitive data from being paged to disk
 - Multi-factor authentication options
+- Secure memory management to prevent key material exposure
 - Biometric authentication support
 - Historically inspired verification protocols
-- Secure destruction of used key material
+- Secure wiping of used key material (with SSD detection)
 
-## Security Architecture
+## Pad-Based Architecture
 
-### Individual Pad Files
+The new pad-based architecture provides several security advantages over a traditional single codebook approach:
 
-Instead of using a single large codebook file, OTP Messenger uses multiple smaller pad files:
+### Why Multiple Pads?
 
-- Each pad is encrypted when not in use
-- Used key material is securely wiped using techniques based on the permadelete project
-- Different strategies are used for SSDs vs. HDDs
-- Pad files include metadata to track usage status
+1. **Compartmentalization**: If one pad is compromised, others remain secure
+2. **Targeted Exchange**: Only exchange the pads you need for a particular communication
+3. **Independent Encryption**: Each pad can have its own encryption keys
+4. **Message Size Limits**: Natural limit to key material usage per message
+5. **Secure Deletion**: Easier to securely delete individual used pads
 
 ### Message Authentication Codes (MACs)
 
-All messages include MACs to ensure:
+All messages include a Message Authentication Code (MAC) to ensure:
 
-- Message integrity (detecting modifications)
-- Authentication (verifying sender)
-- Protection against replay attacks
+1. **Message Integrity**: Verify messages haven't been tampered with
+2. **Authentication**: Confirm messages are from the expected sender
+3. **Replay Protection**: Prevent message replay attacks
+4. **Error Detection**: Identify transmission or storage errors
 
-### Memory Protection
+### Secure Memory Management
 
-Special care is taken to prevent sensitive data from being paged to disk:
+The application is designed to protect sensitive key material in memory:
 
-- Memory locking using Windows VirtualLock
-- Secure zeroing of memory with compiler optimization prevention
-- Careful buffer management
-
-### Historical Context Influences
-
-Several features are inspired by historical cryptographic practices:
-
-- **Challenge-Response Protocols**: Verification of the communication partner's identity
-- **Duress Indicators**: Hidden markers to indicate the sender is under duress
-- **Code Phrases**: Predefined phrases with specific meanings
-- **Secure Destruction**: Methods for quickly destroying key material when compromised
+1. **Memory Protection**: Prevents key material from being swapped to disk
+2. **Secure Wiping**: Multi-pass overwriting of memory and files
+3. **SSD Detection**: Special handling for SSD storage
 
 ## Getting Started
 
@@ -74,7 +66,7 @@ Several features are inspired by historical cryptographic practices:
 - Qt6 (6.2 or newer recommended)
 - C++17 compatible compiler
 - CMake 3.16 or newer
-- Windows OS (currently) due to Windows-specific secure memory handling
+- Windows OS (for current implementation of secure memory features)
 
 ### Building from Source
 
@@ -111,62 +103,57 @@ Detailed documentation is available in the docs directory:
 
 ## Core Components
 
-### PadFileManager
+### PadVaultManager and PadFileManager
 
-Manages individual encrypted pad files:
-- Generation of secure random key material
-- Tracking used/unused portions
+Manages key material in multiple small encrypted files with:
+- Encrypted pad storage
+- Pad usage tracking
 - Secure wiping of used key material
-- Encrypted storage
+- Metadata management
 
 ### MessageProtocol
 
-Handles message formatting with MACs:
-- Different message types (text, challenge-response, etc.)
+Implements message formatting and verification techniques:
 - MAC generation and verification
-- Message encryption/decryption
+- Challenge-response protocols
+- Code phrase verification
+- Hidden duress indicators
+- Replay protection
 
 ### SecureMemory
 
-Prevents sensitive data from being paged to disk:
-- Memory locking and unlocking
-- Secure wiping of memory
-- Protection against compiler optimization
+Provides protection for sensitive data in memory:
+- Memory locking to prevent paging to disk
+- Secure zeroing of memory
+- RAII-based memory handling
 
 ### SecureWiper
 
-Secure deletion based on the permadelete project:
-- Storage-aware wiping (different SSD/HDD approaches)
+Implements secure deletion based on the permadelete approach:
+- Different strategies for SSDs vs HDDs
 - Multi-pass overwriting
 - File metadata destruction
 
-## Development Roadmap
-
-### Core Encryption
-- [x] Implement individual pad file management
-- [x] Add Message Authentication Codes
-- [x] Implement secure memory handling
-- [x] Develop storage-aware secure wiping
-- [ ] Add cross-platform support
-
 ### Authentication
-- [x] Implement basic password authentication
-- [ ] Add 2FA support (TOTP)
-- [ ] Integrate biometric authentication
-- [ ] Create tiered security model
 
-### User Interface
-- [x] Design main messenger interface
-- [ ] Create pad management UI
-- [ ] Implement security settings and preferences
-- [ ] Add key material status indicators
+Multi-factor authentication system:
+- Password-based authentication
+- Time-based One-Time Password (TOTP)
+- Biometric integration
+- Hardware token support
+- Tiered security levels
 
-### Security Enhancements
-- [x] Implement secure storage for pads
-- [x] Add message integrity verification
-- [x] Develop protection against replay attacks
-- [x] Create secure key depletion tracking
-- [ ] Implement more historically-inspired security features
+## Historical Context
+
+### Origins of One-Time Pad Encryption
+
+The One-Time Pad encryption method has roots going back to the 19th century:
+
+- **Telegraph Era Origins**: OTP was originally developed in the 19th century to securely transmit sensitive banking and financial information over telegraph lines using Morse code.
+
+- **Vernam Cipher**: The method was formally patented in 1919 by Gilbert Vernam, an engineer at AT&T Bell Labs, although the core concepts had been in use earlier.
+
+- **Mathematical Perfection**: In 1949, Claude Shannon (the father of information theory) mathematically proved that the One-Time Pad is unbreakable when implemented correctly - the only encryption system with this distinction.
 
 ## Contributing
 
