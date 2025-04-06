@@ -14,23 +14,33 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-# Source files
-set(SOURCES
-    src/main.cpp
-    src/mainwindow.cpp
-    src/cryptoengine.cpp
-    src/codebook.cpp
-    src/authentication.cpp
-    src/messageprotocol.cpp
+# Source files for the core security components
+set(CORE_SOURCES
+    src/secure_memory.cpp
+    src/secure_wiper.cpp
+    src/pad_file_manager.cpp
+    src/message_protocol.cpp
 )
 
-# Header files
-set(HEADERS
+# Header files for the core security components
+set(CORE_HEADERS
+    src/secure_memory.h
+    src/secure_wiper.h
+    src/pad_file_manager.h
+    src/message_protocol.h
+)
+
+# Source files for the UI/app components
+set(UI_SOURCES
+    src/main.cpp
+    src/mainwindow.cpp
+    src/authentication.cpp
+)
+
+# Header files for the UI/app components
+set(UI_HEADERS
     src/mainwindow.h
-    src/cryptoengine.h
-    src/codebook.h
     src/authentication.h
-    src/messageprotocol.h
 )
 
 # UI files
@@ -43,12 +53,19 @@ set(RESOURCE_FILES
     resources/resources.qrc
 )
 
-# Create executable
-add_executable(OTPMessenger
-    ${SOURCES}
-    ${HEADERS}
+# Combine all sources
+set(ALL_SOURCES
+    ${CORE_SOURCES}
+    ${CORE_HEADERS}
+    ${UI_SOURCES}
+    ${UI_HEADERS}
     ${UI_FILES}
     ${RESOURCE_FILES}
+)
+
+# Create executable
+add_executable(OTPMessenger
+    ${ALL_SOURCES}
 )
 
 # Link Qt libraries
@@ -58,6 +75,14 @@ target_link_libraries(OTPMessenger PRIVATE
     Qt6::Widgets
     Qt6::Network
 )
+
+# Link Windows-specific libraries
+if(WIN32)
+    target_link_libraries(OTPMessenger PRIVATE
+        bcrypt.lib    # For cryptography
+        advapi32.lib  # For Windows security APIs
+    )
+endif()
 
 # Installation
 install(TARGETS OTPMessenger
