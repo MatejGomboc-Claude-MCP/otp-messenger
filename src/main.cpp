@@ -1,81 +1,50 @@
 #include <QApplication>
-#include <QCommandLineParser>
 #include <QDir>
+#include <QStandardPaths>
 #include <QMessageBox>
-#include <iostream>
-#include <filesystem>
 #include "mainwindow.h"
 #include "secure_memory.h"
-#include "pad_file_manager.h"
-#include "message_protocol.h"
-#include "secure_wiper.h"
 
-// Enable memory protection early in the application
-bool enableMemoryProtection() {
-    // Tell Qt not to use temporary files
+int main(int argc, char *argv[])
+{
+    // Prevent Qt from using temporary files
     qputenv("QT_NO_TMPDIR", "1");
     
-    // Disable Qt's use of crash backup files
+    // Disable Qt's crash handler (which would write to disk)
     qputenv("QT_NO_CRASH_HANDLER", "1");
     
-    // Try to enable lock memory privileges
-    return otp::SecureMemory::enableLockPrivilege();
-}
-
-int main(int argc, char *argv[]) {
-    // Enable memory protection before creating any Qt objects
-    bool memoryProtectionEnabled = enableMemoryProtection();
-    
+    // Create application
     QApplication app(argc, argv);
     
-    // Set application metadata
-    QCoreApplication::setOrganizationName("OTP Messenger");
-    QCoreApplication::setApplicationName("OTP Messenger");
-    QCoreApplication::setApplicationVersion("1.0.0");
+    // Set application information
+    QApplication::setApplicationName("OTP Messenger");
+    QApplication::setApplicationVersion("1.0.0");
+    QApplication::setOrganizationName("MatejGomboc-Claude-MCP");
+    QApplication::setOrganizationDomain("github.com/MatejGomboc-Claude-MCP");
     
-    // Parse command line arguments
-    QCommandLineParser parser;
-    parser.setApplicationDescription("Encrypted messenger using One-Time Pad encryption");
-    parser.addHelpOption();
-    parser.addVersionOption();
-    
-    // Add command line options
-    QCommandLineOption debugOption(QStringList() << "d" << "debug", "Enable debug output");
-    parser.addOption(debugOption);
-    
-    QCommandLineOption vaultPathOption(QStringList() << "v" << "vault", "Set the pad vault path", "path");
-    parser.addOption(vaultPathOption);
-    
-    parser.process(app);
-    
-    // Check if memory protection was enabled
-    if (!memoryProtectionEnabled) {
-        QMessageBox::warning(nullptr, "Security Warning", 
-                          "Failed to enable memory protection. Your sensitive data may be paged to disk.");
-    }
-    
+    // Enable memory protection
     try {
-        // Initialize vault path
-        std::filesystem::path vaultPath;
-        if (parser.isSet(vaultPathOption)) {
-            vaultPath = parser.value(vaultPathOption).toStdString();
-        } else {
-            // Default vault path
-            vaultPath = QDir::homePath().toStdString() + "/.otp-messenger/vault";
+        if (!otp::SecureMemory::enableLockPrivilege()) {
+            QMessageBox::warning(nullptr, "Memory Protection",
+                               "Failed to enable memory protection. "
+                               "Sensitive data might be swapped to disk.");
         }
-        
-        // Create vault directory if it doesn't exist
-        std::filesystem::create_directories(vaultPath);
-        
-        // Initialize the main window
-        MainWindow w(vaultPath.string());
-        w.show();
-        
-        return app.exec();
     }
-    catch (const std::exception& e) {
-        QMessageBox::critical(nullptr, "Error", 
-                           QString("Failed to initialize application: %1").arg(e.what()));
-        return 1;
+    catch (const std::exception& ex) {
+        QMessageBox::warning(nullptr, "Memory Protection Error",
+                           QString("Error enabling memory protection: %1").arg(ex.what()));
     }
+    
+    // Create application data directory if it doesn't exist
+    QDir appDataDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    if (!appDataDir.exists()) {
+        appDataDir.mkpath(".");
+    }
+    
+    // Create the main window
+    MainWindow mainWindow;
+    mainWindow.show();
+    
+    // Run the application
+    return app.exec();
 }
