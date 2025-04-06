@@ -2,76 +2,89 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QByteArray>
 #include <QString>
 #include <QTimer>
-#include <QLabel>
+#include <QThread>
+#include <QTemporaryFile>
 #include <memory>
-#include <string>
-#include <filesystem>
 #include "pad_file_manager.h"
 #include "message_protocol.h"
+#include "authentication.h"
 
-QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
-QT_END_NAMESPACE
+namespace Ui {
+class MainWindow;
+}
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    /**
-     * @brief Constructor.
-     * 
-     * @param vaultPath Path to the pad vault
-     * @param parent Parent widget
-     */
-    MainWindow(const std::string& vaultPath, QWidget *parent = nullptr);
-    
-    /**
-     * @brief Destructor.
-     */
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
-    // Menu actions
-    void on_actionExit_triggered();
-    void on_actionAbout_triggered();
+    // Pad management
     void on_actionCreatePads_triggered();
-    void on_actionManagePads_triggered();
-    void on_actionSettings_triggered();
+    void on_actionOpenVault_triggered();
+    void on_actionCloseVault_triggered();
     
     // Message operations
     void on_encryptButton_clicked();
     void on_decryptButton_clicked();
-    void on_clearButton_clicked();
+    void on_clearSendButton_clicked();
+    void on_clearReceiveButton_clicked();
+    void on_copySendButton_clicked();
+    void on_copyReceiveButton_clicked();
+    
+    // Authentication
+    void on_actionLogin_triggered();
+    void on_actionLogout_triggered();
+    void on_actionChangePassword_triggered();
+    
+    // Settings
+    void on_actionSettings_triggered();
+    
+    // About
+    void on_actionAbout_triggered();
+    void on_actionAboutQt_triggered();
+    
+    // Exit
+    void on_actionExit_triggered();
     
     // Status updates
-    void updateStatus();
+    void updateKeyStatus();
 
 private:
-    // UI components
+    // UI
     Ui::MainWindow *ui;
-    QLabel* statusKeyMaterial;
-    QLabel* statusPadCount;
-    QTimer* statusTimer;
     
-    // Core components
-    std::filesystem::path vaultPath;
+    // Pad management
     std::unique_ptr<otp::PadVaultManager> padVault;
     std::unique_ptr<otp::MessageProtocol> messageProtocol;
+    std::unique_ptr<Authentication> authentication;
     
-    // State
-    bool isVaultInitialized;
-    std::string vaultPassword;
+    // Status tracking
+    bool vaultOpen;
+    bool authenticated;
+    
+    // Status update timer
+    QTimer statusUpdateTimer;
     
     // Helper methods
-    void initializeVault();
-    bool initializeVaultWithPassword(const QString& password);
-    void updateStatusBar();
+    void initializeUI();
+    void updateUIState();
+    void displayError(const QString& message);
+    void displaySuccess(const QString& message);
     
-    // Security methods
-    void zeroMemoryOnExit();
+    // Settings
+    QString vaultPath;
+    QString masterPassword;
+    
+    // Load/save settings
+    void loadSettings();
+    void saveSettings();
 };
 
 #endif // MAINWINDOW_H
