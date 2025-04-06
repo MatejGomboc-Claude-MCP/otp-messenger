@@ -20,6 +20,7 @@ set(CORE_SOURCES
     src/secure_wiper.cpp
     src/pad_file_manager.cpp
     src/message_protocol.cpp
+    src/encryption_wrapper.cpp
 )
 
 # Header files for the core security components
@@ -28,6 +29,7 @@ set(CORE_HEADERS
     src/secure_wiper.h
     src/pad_file_manager.h
     src/message_protocol.h
+    src/encryption_wrapper.h
 )
 
 # Source files for the UI/app components
