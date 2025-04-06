@@ -1,46 +1,81 @@
 #include <QApplication>
+#include <QCommandLineParser>
+#include <QDir>
 #include <QMessageBox>
-#include <QSettings>
+#include <iostream>
+#include <filesystem>
 #include "mainwindow.h"
+#include "secure_memory.h"
+#include "pad_file_manager.h"
+#include "message_protocol.h"
+#include "secure_wiper.h"
 
-int main(int argc, char *argv[])
-{
+// Enable memory protection early in the application
+bool enableMemoryProtection() {
+    // Tell Qt not to use temporary files
+    qputenv("QT_NO_TMPDIR", "1");
+    
+    // Disable Qt's use of crash backup files
+    qputenv("QT_NO_CRASH_HANDLER", "1");
+    
+    // Try to enable lock memory privileges
+    return otp::SecureMemory::enableLockPrivilege();
+}
+
+int main(int argc, char *argv[]) {
+    // Enable memory protection before creating any Qt objects
+    bool memoryProtectionEnabled = enableMemoryProtection();
+    
     QApplication app(argc, argv);
     
-    app.setApplicationName("OTP Messenger");
-    app.setOrganizationName("OTP Messenger Project");
-    app.setOrganizationDomain("github.com/MatejGomboc-Claude-MCP/otp-messenger");
+    // Set application metadata
+    QCoreApplication::setOrganizationName("OTP Messenger");
+    QCoreApplication::setApplicationName("OTP Messenger");
+    QCoreApplication::setApplicationVersion("1.0.0");
     
-    // Show disclaimer on first run
-    QSettings settings;
-    if (settings.value("firstRun", true).toBool()) {
-        QMessageBox disclaimer;
-        disclaimer.setWindowTitle("Disclaimer");
-        disclaimer.setIcon(QMessageBox::Warning);
-        disclaimer.setText("<b>OTP Messenger - Disclaimer</b>");
-        disclaimer.setInformativeText(
-            "This software is a hobby project provided for educational and research purposes only.\n\n"
-            "The creators and contributors are not responsible for any misuse, damage, or illegal "
-            "activities conducted using this software.\n\n"
-            "By using this software, you acknowledge that:\n"
-            "1. You will comply with all applicable laws and regulations.\n"
-            "2. You accept full responsibility for your use of the software.\n"
-            "3. The developers cannot guarantee perfect security or absence of bugs.\n\n"
-            "This project is not intended for production use or in environments requiring high "
-            "security assurance."
-        );
-        disclaimer.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-        
-        int result = disclaimer.exec();
-        if (result == QMessageBox::Cancel) {
-            return 0;
-        }
-        
-        settings.setValue("firstRun", false);
+    // Parse command line arguments
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Encrypted messenger using One-Time Pad encryption");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    
+    // Add command line options
+    QCommandLineOption debugOption(QStringList() << "d" << "debug", "Enable debug output");
+    parser.addOption(debugOption);
+    
+    QCommandLineOption vaultPathOption(QStringList() << "v" << "vault", "Set the pad vault path", "path");
+    parser.addOption(vaultPathOption);
+    
+    parser.process(app);
+    
+    // Check if memory protection was enabled
+    if (!memoryProtectionEnabled) {
+        QMessageBox::warning(nullptr, "Security Warning", 
+                          "Failed to enable memory protection. Your sensitive data may be paged to disk.");
     }
     
-    MainWindow mainWindow;
-    mainWindow.show();
-    
-    return app.exec();
+    try {
+        // Initialize vault path
+        std::filesystem::path vaultPath;
+        if (parser.isSet(vaultPathOption)) {
+            vaultPath = parser.value(vaultPathOption).toStdString();
+        } else {
+            // Default vault path
+            vaultPath = QDir::homePath().toStdString() + "/.otp-messenger/vault";
+        }
+        
+        // Create vault directory if it doesn't exist
+        std::filesystem::create_directories(vaultPath);
+        
+        // Initialize the main window
+        MainWindow w(vaultPath.string());
+        w.show();
+        
+        return app.exec();
+    }
+    catch (const std::exception& e) {
+        QMessageBox::critical(nullptr, "Error", 
+                           QString("Failed to initialize application: %1").arg(e.what()));
+        return 1;
+    }
 }
