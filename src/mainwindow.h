@@ -2,174 +2,76 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QSettings>
+#include <QString>
+#include <QTimer>
+#include <QLabel>
+#include <memory>
+#include <string>
+#include <filesystem>
+#include "pad_file_manager.h"
+#include "message_protocol.h"
 
-#include "codebook.h"
-#include "cryptoengine.h"
-#include "messageprotocol.h"
-#include "authentication.h"
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
 
-namespace Ui {
-class MainWindow;
-}
-
-/**
- * @brief The MainWindow class provides the main user interface for the OTP Messenger application.
- * 
- * This class coordinates between the UI components and the core classes that handle
- * the cryptographic operations, message formatting, and authentication. It manages
- * the codebook files, handles user interactions, and provides feedback on operations.
- */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
     /**
-     * @brief Constructs the main window
-     * @param parent The parent widget
+     * @brief Constructor.
+     * 
+     * @param vaultPath Path to the pad vault
+     * @param parent Parent widget
      */
-    explicit MainWindow(QWidget *parent = nullptr);
+    MainWindow(const std::string& vaultPath, QWidget *parent = nullptr);
     
     /**
-     * @brief Destroys the main window and clean up resources
+     * @brief Destructor.
      */
     ~MainWindow();
 
 private slots:
-    // File menu actions
-    void on_actionNew_Cypher_Book_triggered();
-    void on_actionOpen_Cypher_Book_triggered();
-    void on_actionSave_Cypher_Book_triggered();
+    // Menu actions
     void on_actionExit_triggered();
-    
-    // Message menu actions
-    void on_actionSend_Message_triggered();
-    void on_actionReceive_Message_triggered();
-    void on_actionClear_Messages_triggered();
-    
-    // Settings menu actions
-    void on_actionPreferences_triggered();
-    void on_actionAuthentication_triggered();
-    
-    // Help menu actions
     void on_actionAbout_triggered();
+    void on_actionCreatePads_triggered();
+    void on_actionManagePads_triggered();
+    void on_actionSettings_triggered();
     
-    // Message tab buttons
-    void on_pushButtonOpenCypherBook_clicked();
-    void on_pushButtonNewCypherBook_clicked();
-    void on_pushButtonSend_clicked();
-    void on_pushButtonClear_clicked();
-    void on_pushButtonPaste_clicked();
-    void on_pushButtonClearReceive_clicked();
-    void on_pushButtonDecrypt_clicked();
-    void on_pushButtonAttach_clicked();
-    void on_pushButtonChallenge_clicked();
-    void on_pushButtonCodePhrase_clicked();
-    void on_pushButtonLoadFromFile_clicked();
+    // Message operations
+    void on_encryptButton_clicked();
+    void on_decryptButton_clicked();
+    void on_clearButton_clicked();
     
-    // Signal handlers
-    void handleError(const QString &errorMessage);
-    void handleKeyMaterialLow(double percentageRemaining);
-    void handleEmergencyProtocol();
-    void handleDuressDetected();
-    void handleChallengeReceived(const QString &challenge);
-    void handleCodePhraseReceived(const QString &codePhrase);
-    void handleAuthenticationFailed(const QString &reason);
-    void handleAuthenticationSuccessful();
-    void handleBiometricPrompt();
-    void handleHardwareTokenPrompt();
+    // Status updates
+    void updateStatus();
 
 private:
+    // UI components
     Ui::MainWindow *ui;
+    QLabel* statusKeyMaterial;
+    QLabel* statusPadCount;
+    QTimer* statusTimer;
     
     // Core components
-    CodeBook *codeBook;
-    CryptoEngine *cryptoEngine;
-    MessageProtocol *messageProtocol;
-    Authentication *authentication;
+    std::filesystem::path vaultPath;
+    std::unique_ptr<otp::PadVaultManager> padVault;
+    std::unique_ptr<otp::MessageProtocol> messageProtocol;
     
-    // State tracking
-    QString codeBookPath;
-    bool codeBookModified;
+    // State
+    bool isVaultInitialized;
+    std::string vaultPassword;
     
-    /**
-     * @brief Initialize core components
-     */
-    void initializeComponents();
-    
-    /**
-     * @brief Setup signal/slot connections
-     */
-    void setupConnections();
-    
-    /**
-     * @brief Load application settings
-     */
-    void loadSettings();
-    
-    /**
-     * @brief Save application settings
-     */
-    void saveSettings();
-    
-    /**
-     * @brief Prompt to save changes if needed
-     * @return True if operation can continue, false if cancelled
-     */
-    bool maybeSave();
-    
-    /**
-     * @brief Load a codebook from file
-     * @param path The path to the codebook file
-     * @return True if successful, false otherwise
-     */
-    bool loadCodeBook(const QString &path);
-    
-    /**
-     * @brief Update status bar information
-     */
+    // Helper methods
+    void initializeVault();
+    bool initializeVaultWithPassword(const QString& password);
     void updateStatusBar();
     
-    /**
-     * @brief Update the codebook information display
-     */
-    void updateCodeBookInfo();
-    
-    /**
-     * @brief Update the compartments table
-     */
-    void updateCompartmentsTable();
-    
-    /**
-     * @brief Update the key material visualizer
-     */
-    void updateKeyMaterialVisualizer();
-    
-    /**
-     * @brief Format byte size for display
-     * @param bytes The number of bytes
-     * @return A formatted string (e.g., "1.23 MB")
-     */
-    QString formatByteSize(quint64 bytes);
-    
-    /**
-     * @brief Handle a file transfer message
-     * @param message The parsed message
-     */
-    void handleFileTransferMessage(const MessageProtocol::Message &message);
-    
-    /**
-     * @brief Handle a challenge message
-     * @param message The parsed message
-     */
-    void handleChallengeMessage(const MessageProtocol::Message &message);
-    
-    /**
-     * @brief Handle a code phrase message
-     * @param message The parsed message
-     */
-    void handleCodePhraseMessage(const MessageProtocol::Message &message);
+    // Security methods
+    void zeroMemoryOnExit();
 };
 
 #endif // MAINWINDOW_H
